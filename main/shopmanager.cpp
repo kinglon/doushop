@@ -32,6 +32,7 @@ void ShopManager::save()
         shopJson["bid"] = shop.m_bid;
         shopJson["cookies"] = shop.m_cookies;
         shopJson["token"] = shop.m_token;
+        shopJson["platform_source"] = shop.m_platformSource;
         shopsJson.append(shopJson);
     }
     root["shop"] = shopsJson;
@@ -74,6 +75,7 @@ void ShopManager::load()
         shopItem.m_bid = shopJson["bid"].toString();
         shopItem.m_cookies = shopJson["cookies"].toString();
         shopItem.m_token = shopJson["token"].toString();
+        shopItem.m_platformSource = shopJson["platform_source"].toString();
         m_shops.append(shopItem);
     }
 }
@@ -98,6 +100,24 @@ void ShopManager::deleteShop(QString id)
         if (it->m_id == id)
         {
             m_shops.erase(it);
+            break;
+        }
+    }
+
+    save();
+}
+
+void ShopManager::updateLoginInfo(const Shop& shop)
+{
+    for (auto it = m_shops.begin(); it != m_shops.end(); it++)
+    {
+        if (it->m_id == shop.m_id)
+        {
+            it->m_aid = shop.m_aid;
+            it->m_bid = shop.m_bid;
+            it->m_token = shop.m_token;
+            it->m_cookies = shop.m_cookies;
+            it->m_platformSource = shop.m_platformSource;
             break;
         }
     }

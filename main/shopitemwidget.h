@@ -21,6 +21,8 @@ public:
 
     bool isSelected();
 
+    void setSelected(bool selected);
+
     QString getShopId() { return m_shopId; }
 
 private:

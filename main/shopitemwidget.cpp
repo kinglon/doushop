@@ -39,7 +39,7 @@ void ShopItemWidget::updateCtrls()
     }
 
     ui->shopNameLabel->setText(shop->m_name);
-    if (shop->m_cookies.isEmpty())
+    if (!shop->isLogin())
     {
         ui->loginStatusLabel->setText(QString::fromWCharArray(L"未登录"));
     }
@@ -53,4 +53,9 @@ void ShopItemWidget::updateCtrls()
 bool ShopItemWidget::isSelected()
 {
     return ui->checkBox->isChecked();
+}
+
+void ShopItemWidget::setSelected(bool selected)
+{
+    ui->checkBox->setChecked(selected);
 }

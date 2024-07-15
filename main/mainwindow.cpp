@@ -4,7 +4,9 @@
 #include "shopitemwidget.h"
 #include <QDateTime>
 #include <QFileDialog>
+#include "gettextdialog.h"
 #include "uiutil.h"
+#include <QUuid>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -31,9 +33,35 @@ void MainWindow::initCtrls()
         addListItemCtrl(shop);
     }
 
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    currentDateTime.setTime(QTime(0, 0, 0));
+    ui->beginDateTimeEdit->setDateTime(currentDateTime);
+    QDateTime nextDateTime = currentDateTime.addDays(1);
+    ui->endDateTimeEdit->setDateTime(nextDateTime);
+
     connect(ui->addShopBtn, &QPushButton::clicked, [this]() {
         onAddShopBtn();
-    });   
+    });
+
+    connect(ui->selectShopBtn, &QPushButton::clicked, [this]() {
+        onSelectShopBtn();
+    });
+
+    connect(ui->beginCollectBtn, &QPushButton::clicked, [this]() {
+        onBeginCollectBtn();
+    });
+
+    connect(ui->continueCollectBtn, &QPushButton::clicked, [this]() {
+        onContinueCollectBtn();
+    });
+
+    connect(ui->stopCollectBtn, &QPushButton::clicked, [this]() {
+        onStopCollectBtn();
+    });
+
+    connect(ui->excelBtn, &QPushButton::clicked, [this]() {
+        onExcelBtn();
+    });
 }
 
 void MainWindow::addListItemCtrl(const Shop& shop)
@@ -78,16 +106,32 @@ QListWidgetItem* MainWindow::getListItem(QString shopId)
 }
 
 void MainWindow::onAddShopBtn()
+{    
+    GetTextDialog getTextDialog(this);
+    getTextDialog.setTitle(QString::fromWCharArray(L"添加店铺"));
+    getTextDialog.setKeyName(QString::fromWCharArray(L"店铺名字"));
+    getTextDialog.show();
+    if (getTextDialog.exec() == QDialog::Accepted)
+    {
+        Shop shop;
+        shop.m_id = QUuid::createUuid().toString();
+        shop.m_name = getTextDialog.getText();
+        ShopManager::getInstance()->m_shops.append(shop);
+        ShopManager::getInstance()->save();
+        addListItemCtrl(shop);
+    }
+}
+
+void MainWindow::onSelectShopBtn()
 {
-    // todo by yejinlong, onAddShopBtn
-//    PlanDialog planDlg(PlanItem(), this);
-//    planDlg.show();
-//    if (planDlg.exec() == QDialog::Accepted)
-//    {
-//        PlanManager::getInstance()->m_plans.append(planDlg.getPlanItem());
-//        PlanManager::getInstance()->save();
-//        addPlanListItemCtrl(planDlg.getPlanItem());
-//    }
+    for (int i=0; i < ui->listWidget->count(); i++)
+    {
+        ShopItemWidget* item = (ShopItemWidget*)ui->listWidget->item(i);
+        if (!item->isSelected())
+        {
+            item->setSelected(true);
+        }
+    }
 }
 
 void MainWindow::onDeleteShopBtn(QString shopId)
@@ -104,7 +148,50 @@ void MainWindow::onDeleteShopBtn(QString shopId)
 
 void MainWindow::onLoginShopBtn(QString shopId)
 {
-    // todo by yejinlong onLoginShopBtn
+    if (m_loginUtil)
+    {
+        UiUtil::showTip(QString::fromWCharArray(L"正在登录中"));
+        return;
+    }
+
+    m_loginUtil = new LoginUtil();
+    m_loginUtil->setShopId(shopId);
+    connect(m_loginUtil, &LoginUtil::printLog, this, &MainWindow::addLog);
+    connect(m_loginUtil, &LoginUtil::runFinish, [this](bool success) {
+        if (!success)
+        {
+            addLog(QString::fromWCharArray(L"登录失败"));
+            return;
+        }
+
+        ShopManager::getInstance()->updateLoginInfo(m_loginUtil->getShop());
+        updateListItemCtrl(m_loginUtil->getShop().m_id);
+        addLog(QString::fromWCharArray(L"登录成功"));
+
+        m_loginUtil->deleteLater();
+        m_loginUtil = nullptr;
+    });
+    m_loginUtil->run();
+}
+
+void MainWindow::onBeginCollectBtn()
+{
+    // todo by yejinlong onBeginCollectBtn
+}
+
+void MainWindow::onContinueCollectBtn()
+{
+    // todo by yejinlong onContinueCollectBtn
+}
+
+void MainWindow::onStopCollectBtn()
+{
+    // todo by yejinlong onStopCollectBtn
+}
+
+void MainWindow::onExcelBtn()
+{
+    // todo by yejinlong onExcelBtn
 }
 
 void MainWindow::addLog(QString log)

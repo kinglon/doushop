@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>818</width>
-    <height>572</height>
+    <width>629</width>
+    <height>622</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -17,28 +17,178 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>苹果助手</string>
+   <string>抖店助手</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="layoutWidget">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>794</width>
-      <height>551</height>
+      <width>611</width>
+      <height>601</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
      <property name="spacing">
-      <number>10</number>
+      <number>12</number>
      </property>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="minimumSize">
+          <size>
+           <width>55</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>55</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>商品信息</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="goodsInfoEdit"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="minimumSize">
+          <size>
+           <width>55</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>55</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>订单编号</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="orderIdEdit"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="minimumSize">
+          <size>
+           <width>55</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>55</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>开始时间</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDateTimeEdit" name="beginDateTimeEdit"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="minimumSize">
+          <size>
+           <width>55</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>55</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>结束时间</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDateTimeEdit" name="endDateTimeEdit"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QListWidget" name="listWidget">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>245</height>
+        </size>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::NoSelection</enum>
+       </property>
+       <property name="gridSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+      </widget>
+     </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QPushButton" name="addShopBtn">
          <property name="text">
           <string>添加店铺</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="selectShopBtn">
+         <property name="text">
+          <string>全选店铺</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="beginCollectBtn">
+         <property name="text">
+          <string>开始采集</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="continueCollectBtn">
+         <property name="text">
+          <string>继续采集</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="stopCollectBtn">
+         <property name="text">
+          <string>结束采集</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="excelBtn">
+         <property name="text">
+          <string>表格处理</string>
          </property>
         </widget>
        </item>
@@ -56,25 +206,6 @@
         </spacer>
        </item>
       </layout>
-     </item>
-     <item>
-      <widget class="QListWidget" name="listWidget">
-       <property name="minimumSize">
-        <size>
-         <width>792</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="selectionMode">
-        <enum>QAbstractItemView::NoSelection</enum>
-       </property>
-       <property name="gridSize">
-        <size>
-         <width>0</width>
-         <height>30</height>
-        </size>
-       </property>
-      </widget>
      </item>
      <item>
       <widget class="QTextEdit" name="logEdit">

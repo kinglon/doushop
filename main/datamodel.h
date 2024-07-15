@@ -25,7 +25,13 @@ public:
     QString m_aid;
 
     // aftersale_platform_source
-    QString platformSource;
+    QString m_platformSource;
+
+public:
+    bool isLogin()
+    {
+        return !m_cookies.isEmpty() && !m_token.isEmpty();
+    }
 };
 
 class Comment

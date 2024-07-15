@@ -19,6 +19,8 @@ public:
 
     void deleteShop(QString id);
 
+    void updateLoginInfo(const Shop& shop);
+
 private:
     void load();
 

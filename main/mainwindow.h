@@ -9,6 +9,7 @@
 #include <QPainter>
 #include "datamodel.h"
 #include "shopitemwidget.h"
+#include "loginutil.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -51,13 +52,25 @@ private:
 private slots:
     void onAddShopBtn();
 
+    void onSelectShopBtn();
+
     void onDeleteShopBtn(QString shopId);
 
     void onLoginShopBtn(QString shopId);
+
+    void onBeginCollectBtn();
+
+    void onContinueCollectBtn();
+
+    void onStopCollectBtn();
+
+    void onExcelBtn();
 
     void addLog(QString log);
 
 private:
     Ui::MainWindow *ui;
+
+    LoginUtil* m_loginUtil = nullptr;
 };
 #endif // MAINWINDOW_H

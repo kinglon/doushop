@@ -17,6 +17,8 @@ SOURCES += \
     Utility/LogUtil.cpp \
     browserwindow.cpp \
     datamodel.cpp \
+    gettextdialog.cpp \
+    loginutil.cpp \
     main.cpp \
     mainwindow.cpp \
     settingmanager.cpp \
@@ -34,6 +36,8 @@ HEADERS += \
     Utility/LogUtil.h \
     browserwindow.h \
     datamodel.h \
+    gettextdialog.h \
+    loginutil.h \
     mainwindow.h \
     settingmanager.h \
     shopitemwidget.h \
@@ -42,6 +46,7 @@ HEADERS += \
 
 FORMS += \
     browserwindow.ui \
+    gettextdialog.ui \
     mainwindow.ui \
     shopitemwidget.ui
 
