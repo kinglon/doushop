@@ -7,6 +7,9 @@
 #include "gettextdialog.h"
 #include "uiutil.h"
 #include <QUuid>
+#include "collectstatusmanager.h"
+#include "collectcontroller.h"
+#include "exceldialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -62,6 +65,13 @@ void MainWindow::initCtrls()
     connect(ui->excelBtn, &QPushButton::clicked, [this]() {
         onExcelBtn();
     });
+}
+
+void MainWindow::updateButtonStatus()
+{
+    ui->beginCollectBtn->setEnabled(!m_isCollecting);
+    ui->continueCollectBtn->setEnabled(!m_isCollecting && CollectStatusManager::getInstance()->hasTaskCollecting());
+    ui->stopCollectBtn->setEnabled(ui->continueCollectBtn->isEnabled());
 }
 
 void MainWindow::addListItemCtrl(const Shop& shop)
@@ -126,10 +136,11 @@ void MainWindow::onSelectShopBtn()
 {
     for (int i=0; i < ui->listWidget->count(); i++)
     {
-        ShopItemWidget* item = (ShopItemWidget*)ui->listWidget->item(i);
-        if (!item->isSelected())
+        QListWidgetItem* item = (QListWidgetItem*)ui->listWidget->item(i);
+        ShopItemWidget* itemWidget = (ShopItemWidget*)ui->listWidget->itemWidget(item);
+        if (!itemWidget->isSelected())
         {
-            item->setSelected(true);
+            itemWidget->setSelected(true);
         }
     }
 }
@@ -176,22 +187,100 @@ void MainWindow::onLoginShopBtn(QString shopId)
 
 void MainWindow::onBeginCollectBtn()
 {
-    // todo by yejinlong onBeginCollectBtn
+    CollectTaskItem task;
+    task.m_goodsInfo = ui->goodsInfoEdit->text();
+    task.m_orderId = ui->orderIdEdit->text();
+    task.m_beginTime = ui->beginDateTimeEdit->dateTime().toSecsSinceEpoch();
+    task.m_endTime = ui->endDateTimeEdit->dateTime().toSecsSinceEpoch();
+    if (task.m_beginTime > task.m_endTime)
+    {
+        UiUtil::showTip(QString::fromWCharArray(L"开始时间不能比结束时间晚"));
+        return;
+    }
+
+    QVector<CollectTaskItem> tasks;
+    for (int i=0; i < ui->listWidget->count(); i++)
+    {
+        QListWidgetItem* item = (QListWidgetItem*)ui->listWidget->item(i);
+        ShopItemWidget* itemWidget = (ShopItemWidget*)ui->listWidget->itemWidget(item);
+        if (itemWidget->isSelected())
+        {
+            task.m_shopId = itemWidget->getShopId();
+            Shop* shop = ShopManager::getInstance()->getShopById(task.m_shopId);
+            if (shop == nullptr)
+            {
+                continue;
+            }
+
+            if (shop->isLogin())
+            {
+                tasks.append(task);
+            }
+            else
+            {
+                UiUtil::showTip(QString::fromWCharArray(L"店铺%1未登录").arg(shop->m_name.toStdString().c_str()));
+                return;
+            }
+        }
+    }
+    if (tasks.size() == 0)
+    {
+        UiUtil::showTip(QString::fromWCharArray(L"没有选择店铺"));
+        return;
+    }
+
+    CollectStatusManager::getInstance()->startNewTasks(tasks);
+    updateButtonStatus();
+    onContinueCollectBtn();
 }
 
 void MainWindow::onContinueCollectBtn()
 {
-    // todo by yejinlong onContinueCollectBtn
+    // 如果采集已经完成，就结束采集
+    if (CollectStatusManager::getInstance()->isFinish())
+    {
+        onStopCollectBtn();
+        return;
+    }
+
+    m_isCollecting = true;
+    updateButtonStatus();
+    ui->logEdit->setText("");
+
+    CollectController* collectController = new CollectController(this);
+    connect(collectController, &CollectController::printLog, this, &MainWindow::addLog);
+    connect(collectController, &CollectController::runFinish, [this, collectController](bool success) {
+        if (success)
+        {
+            addLog(QString::fromWCharArray(L"采集完成"));
+            onStopCollectBtn();
+        }
+        collectController->deleteLater();
+    });
+    collectController->run();
 }
 
 void MainWindow::onStopCollectBtn()
 {
-    // todo by yejinlong onStopCollectBtn
+    m_isCollecting = false;
+    updateButtonStatus();
+
+    // 保存采集结果并打开保存目录
+    if (!CollectController::saveCollectResult())
+    {
+        UiUtil::showTip(QString::fromWCharArray(L"保存采集结果到表格失败"));
+        return;
+    }
+
+    CollectStatusManager::getInstance()->reset();
+    updateButtonStatus();
 }
 
 void MainWindow::onExcelBtn()
 {
-    // todo by yejinlong onExcelBtn
+    ExcelDialog excelDialog(this);
+    excelDialog.show();
+    excelDialog.exec();
 }
 
 void MainWindow::addLog(QString log)

@@ -150,6 +150,7 @@ void LoginUtil::runJsCodeFinish(bool ok, const QMap<QString, QString>& result)
 
         if (m_shop.isLogin())
         {
+            BrowserWindow::getInstance()->cleanCookie();
             stepGetLoginInfoFinish(true);
         }
     }

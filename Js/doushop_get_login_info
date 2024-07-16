@@ -3,6 +3,7 @@ jsResult['fun'] = 'get_login_info';
 try 
 {
   jsResult['token'] = window.__SSR_CONFIG_ECOM_FXG_ADMIN.initialData["fxg-admin"].userData.user.token;
+  jsResult['cookie'] = document.cookie; 
 } 
 catch (error) 
 {

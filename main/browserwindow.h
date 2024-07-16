@@ -52,7 +52,10 @@ public:
     bool captrueImage(const QString& savePath);
 
     // 执行JS脚本
-    void runJsCode(const QString& jsCode);    
+    void runJsCode(const QString& jsCode);
+
+    // 清除cookie
+    void cleanCookie();
 
 signals:
     // 加载网页完成

@@ -2,6 +2,8 @@
 #include "ui_browserwindow.h"
 #include <QImage>
 #include <QWebEngineSettings>
+#include <QWebEngineProfile>
+#include <QWebEngineCookieStore>
 #include "Utility/ImPath.h"
 
 QWebEnginePage* WebEnginePage::createWindow(WebWindowType)
@@ -88,6 +90,17 @@ void BrowserWindow::runJsCode(const QString& jsCode)
     m_webView->page()->runJavaScript(jsCode, [this](const QVariant &result) {
         emit runJsCodeFinished(result);
     });
+}
+
+void BrowserWindow::cleanCookie()
+{
+    QWebEngineProfile *profile = m_webView->page()->profile();
+
+    // Retrieve the cookie store from the profile
+    QWebEngineCookieStore *cookieStore = profile->cookieStore();
+
+    // Delete all cookies from the cookie store
+    cookieStore->deleteAllCookies();
 }
 
 void BrowserWindow::onLoadFinished(bool ok)

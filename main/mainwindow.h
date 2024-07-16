@@ -43,6 +43,8 @@ public:
 private:
     void initCtrls();
 
+    void updateButtonStatus();
+
     void addListItemCtrl(const Shop& shop);
 
     void updateListItemCtrl(QString shopId);
@@ -72,5 +74,8 @@ private:
     Ui::MainWindow *ui;
 
     LoginUtil* m_loginUtil = nullptr;
+
+    // 标志采集器是否正在运行
+    bool m_isCollecting = false;
 };
 #endif // MAINWINDOW_H

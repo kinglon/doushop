@@ -16,11 +16,17 @@ SOURCES += \
     Utility/LogBuffer.cpp \
     Utility/LogUtil.cpp \
     browserwindow.cpp \
+    collectcontroller.cpp \
+    collectstatusmanager.cpp \
+    datacollector.cpp \
     datamodel.cpp \
+    exceldialog.cpp \
+    excelhandler.cpp \
     gettextdialog.cpp \
     loginutil.cpp \
     main.cpp \
     mainwindow.cpp \
+    myprogressdialog.cpp \
     settingmanager.cpp \
     shopitemwidget.cpp \
     shopmanager.cpp \
@@ -35,10 +41,16 @@ HEADERS += \
     Utility/LogMacro.h \
     Utility/LogUtil.h \
     browserwindow.h \
+    collectcontroller.h \
+    collectstatusmanager.h \
+    datacollector.h \
     datamodel.h \
+    exceldialog.h \
+    excelhandler.h \
     gettextdialog.h \
     loginutil.h \
     mainwindow.h \
+    myprogressdialog.h \
     settingmanager.h \
     shopitemwidget.h \
     shopmanager.h \
@@ -46,6 +58,7 @@ HEADERS += \
 
 FORMS += \
     browserwindow.ui \
+    exceldialog.ui \
     gettextdialog.ui \
     mainwindow.ui \
     shopitemwidget.ui
@@ -58,7 +71,11 @@ QMAKE_LFLAGS_RELEASE += /DEBUG
 # Enable log context
 DEFINES += QT_MESSAGELOGCONTEXT
 
-# QXlsx code for Application Qt project
+# QXlsx
 include(../thirdparty/QXlsx/QXlsx.pri)
 INCLUDEPATH += ../thirdparty/QXlsx/header/
+
+# brotli
+INCLUDEPATH += ../thirdparty/brotli/include
+LIBS += -L"$$_PRO_FILE_PWD_/../thirdparty/brotli/lib" -lbrotlidec
 
