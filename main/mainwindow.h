@@ -70,6 +70,8 @@ private slots:
 
     void addLog(QString log);
 
+    void closeEvent(QCloseEvent *event);
+
 private:
     Ui::MainWindow *ui;
 

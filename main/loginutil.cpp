@@ -8,7 +8,7 @@
 #define LOAD_URL_MAX_RETRY_COUNT 1
 
 // 等待就绪状态最大重试次数
-#define WAIT_READY_MAX_RETRY_COUNT 30
+#define WAIT_READY_MAX_RETRY_COUNT 60
 
 // 获取登录信息最大次数
 #define GET_LOGIN_INFO_MAX_RETRY_COUNT 20
@@ -33,9 +33,12 @@ void LoginUtil::run()
     {
         qCritical("the shop id is empty");
         return;
-    }    
+    }
 
-    emit printLog(QString::fromWCharArray(L"开始登录"));
+    BrowserWindow::getInstance()->setWebViewSize(QSize(CSettingManager::GetInstance()->m_browserWidth,
+                                                       CSettingManager::GetInstance()->m_browserHeight));
+    BrowserWindow::getInstance()->showMaximized();
+    BrowserWindow::getInstance()->cleanCookie();
 
     m_currentStep = STEP_LOADURL;
     m_stepRetryCount = 0;

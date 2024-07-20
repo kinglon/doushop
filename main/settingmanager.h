@@ -15,7 +15,11 @@ private:
 	void Load();
 
 public:
-    int m_nLogLevel = 2;  // debug
+    // 日志级别，默认info
+    int m_nLogLevel = 2;
+
+    // 请求间隔，单位号码
+    int m_request_interval_ms = 100;
 
     // 是否启用webview日志输出
     bool m_enableWebviewLog = false;

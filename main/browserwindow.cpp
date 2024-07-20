@@ -25,8 +25,7 @@ void WebEnginePage::onUrlChanged(const QUrl & url)
 BrowserWindow::BrowserWindow(QWidget *parent) :
     QMainWindow(parent),
     m_webView(new QWebEngineView(this))
-{
-    setEnabled(false);
+{    
     setWindowTitle(QString::fromStdWString(L"浏览器"));
     m_webView->setPage(new WebEnginePage(m_webView));
     m_webView->resize(QSize(1920,1080));
@@ -111,6 +110,13 @@ void BrowserWindow::onLoadFinished(bool ok)
 
 void BrowserWindow::closeEvent(QCloseEvent *event)
 {
+    if (m_hideWhenClose)
+    {
+        hide();
+        event->ignore();
+        return;
+    }
+
     if (m_canClose)
     {
         event->accept();

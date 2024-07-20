@@ -100,12 +100,12 @@ bool ExcelHandler::doMerge(QString excel1FilePath, QString excel2FilePath)
 
     QVector<QVector<QString>> excel2Datas;
     CellRange excel2Range = excel2.dimension();
-    for (int row=2; row <= excel2Range.lastRow(); row++)
+    for (int row=1; row <= excel2Range.lastRow(); row++)
     {
         QVector<QString> rowContents;
         for (int column=1; column <=excel2Range.lastColumn(); column++)
         {
-            Cell* cell = excel1.cellAt(row, column);
+            Cell* cell = excel2.cellAt(row, column);
             if (cell)
             {
                 QVariant rawValue = cell->value();
@@ -155,6 +155,7 @@ bool ExcelHandler::doMerge(QString excel1FilePath, QString excel2FilePath)
     const int orderIdIndex2 = 1;
     for (auto& result : results)
     {
+        bool found = false;
         for (const auto& excel2Data : excel2Datas)
         {
             if (excel2Data.length() > orderIdIndex && excel2Data[orderIdIndex] == result[orderIdIndex2])
@@ -170,13 +171,16 @@ bool ExcelHandler::doMerge(QString excel1FilePath, QString excel2FilePath)
                         result.append("");
                     }
                 }
-            }
-            else
+                found = true;
+                break;
+            }            
+        }
+
+        if (!found)
+        {
+            for (int i=0; i<ARRAYSIZE(indexArray); i++)
             {
-                for (int i=0; i<ARRAYSIZE(indexArray); i++)
-                {
-                    result.append("");
-                }
+                result.append("");
             }
         }
     }

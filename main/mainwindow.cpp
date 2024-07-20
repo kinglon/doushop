@@ -10,6 +10,7 @@
 #include "collectstatusmanager.h"
 #include "collectcontroller.h"
 #include "exceldialog.h"
+#include "browserwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -165,6 +166,14 @@ void MainWindow::onLoginShopBtn(QString shopId)
         return;
     }
 
+    Shop* shop = ShopManager::getInstance()->getShopById(shopId);
+    if (shop == nullptr)
+    {
+        qCritical("failed to find the shop");
+        return;
+    }
+    addLog(QString::fromWCharArray(L"开始登录店铺(%1)").arg(shop->m_name));
+
     m_loginUtil = new LoginUtil();
     m_loginUtil->setShopId(shopId);
     connect(m_loginUtil, &LoginUtil::printLog, this, &MainWindow::addLog);
@@ -172,12 +181,15 @@ void MainWindow::onLoginShopBtn(QString shopId)
         if (!success)
         {
             addLog(QString::fromWCharArray(L"登录失败"));
-            return;
+        }
+        else
+        {
+            ShopManager::getInstance()->updateLoginInfo(m_loginUtil->getShop());
+            updateListItemCtrl(m_loginUtil->getShop().m_id);
+            addLog(QString::fromWCharArray(L"登录成功"));
         }
 
-        ShopManager::getInstance()->updateLoginInfo(m_loginUtil->getShop());
-        updateListItemCtrl(m_loginUtil->getShop().m_id);
-        addLog(QString::fromWCharArray(L"登录成功"));
+        BrowserWindow::getInstance()->hide();
 
         m_loginUtil->deleteLater();
         m_loginUtil = nullptr;
@@ -218,7 +230,7 @@ void MainWindow::onBeginCollectBtn()
             }
             else
             {
-                UiUtil::showTip(QString::fromWCharArray(L"店铺%1未登录").arg(shop->m_name.toStdString().c_str()));
+                UiUtil::showTip(QString::fromWCharArray(L"店铺(%1)未登录").arg(shop->m_name.toStdString().c_str()));
                 return;
             }
         }
@@ -250,6 +262,9 @@ void MainWindow::onContinueCollectBtn()
     CollectController* collectController = new CollectController(this);
     connect(collectController, &CollectController::printLog, this, &MainWindow::addLog);
     connect(collectController, &CollectController::runFinish, [this, collectController](bool success) {
+        m_isCollecting = false;
+        updateButtonStatus();
+
         if (success)
         {
             addLog(QString::fromWCharArray(L"采集完成"));
@@ -266,12 +281,14 @@ void MainWindow::onStopCollectBtn()
     updateButtonStatus();
 
     // 保存采集结果并打开保存目录
-    if (!CollectController::saveCollectResult())
+    QString savedFilePath = CollectController::saveCollectResult();
+    if (savedFilePath.isEmpty())
     {
         UiUtil::showTip(QString::fromWCharArray(L"保存采集结果到表格失败"));
         return;
     }
 
+    addLog(QString::fromWCharArray(L"保存采集结果到%1").arg(savedFilePath));
     CollectStatusManager::getInstance()->reset();
     updateButtonStatus();
 }
@@ -298,4 +315,12 @@ void MainWindow::addLog(QString log)
     QString currentTimeString = currentDateTime.toString("[MM-dd hh:mm:ss] ");
     QString line = currentTimeString + log;
     ui->logEdit->append(line);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    BrowserWindow::getInstance()->setCanClose();
+    BrowserWindow::getInstance()->close();
+    event->accept();
+    QApplication::quit();
 }

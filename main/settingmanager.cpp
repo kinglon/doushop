@@ -33,6 +33,7 @@ void CSettingManager::Load()
     QJsonDocument jsonDocument = QJsonDocument::fromJson(jsonData);
     QJsonObject root = jsonDocument.object();
     m_nLogLevel = root["log_level"].toInt();
+    m_request_interval_ms = root["request_interval_ms"].toInt();
     m_enableWebviewLog = root["enable_webview_log"].toInt();
     m_cacheJsCode = root["cache_jscode"].toInt();
     m_browserWidth = root["browser_width"].toInt();

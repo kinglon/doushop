@@ -3,6 +3,7 @@
 #include "shopmanager.h"
 #include "datacollector.h"
 #include "Utility/ImPath.h"
+#include "settingmanager.h"
 
 #include "xlsxdocument.h"
 #include "xlsxchartsheet.h"
@@ -10,6 +11,7 @@
 #include "xlsxchart.h"
 #include "xlsxrichstring.h"
 #include "xlsxworkbook.h"
+#include <QDesktopServices>
 
 using namespace QXlsx;
 
@@ -25,18 +27,18 @@ void CollectController::run()
     emit collectNextTask();
 }
 
-bool CollectController::saveCollectResult()
+QString CollectController::saveCollectResult()
 {
     // 拷贝默认采集结果输出表格到保存目录
     QString excelFileName = QString::fromWCharArray(L"采集结果.xlsx");
     QString srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + excelFileName;
-    QString destExcelFileName = QDateTime::currentDateTime().toString("yyyyMMdd_hhmm.xlsx");
+    QString destExcelFileName = QDateTime::currentDateTime().toString("yyyyMMdd_hhmm") + ".xlsx";
     QString destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + destExcelFileName;
     ::DeleteFile(destExcelFilePath.toStdWString().c_str());
     if (!::CopyFile(srcExcelFilePath.toStdWString().c_str(), destExcelFilePath.toStdWString().c_str(), TRUE))
     {
         qCritical("failed to copy the result excel file");
-        return false;
+        return "";
     }
 
     // 从第2行开始写
@@ -44,7 +46,7 @@ bool CollectController::saveCollectResult()
     if (!xlsx.load())
     {
         qCritical("failed to load the result excel file");
-        return false;
+        return "";
     }
 
     auto& datas = CollectStatusManager::getInstance()->getCollectDatas();
@@ -64,10 +66,11 @@ bool CollectController::saveCollectResult()
     if (!xlsx.save())
     {
         qCritical("failed to save the result excel file");
-        return false;
+        return "";
     }
 
-    return true;
+    QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdWString(CImPath::GetDataPath())));
+    return destExcelFilePath;
 }
 
 void CollectController::onPrintLog(QString content)
@@ -93,7 +96,7 @@ void CollectController::onCollectNextTask()
     }
 
     int nextPageIndex = CollectStatusManager::getInstance()->getNextPageIndex();
-    QString logContent = QString::fromWCharArray(L"采集店铺%1第%2页").arg(shop->m_name.toStdString().c_str(), nextPageIndex+1);
+    QString logContent = QString::fromWCharArray(L"采集店铺(%1)第%2页").arg(shop->m_name, QString::number(nextPageIndex+1));
     emit printLog(logContent);
 
     DataCollector* collector = new DataCollector(this);
@@ -140,6 +143,8 @@ void CollectController::finishCurrentTask(const QVector<Comment>& dataModel, boo
     else
     {
         // 异步调用
-        emit collectNextTask();
+        QTimer::singleShot(CSettingManager::GetInstance()->m_request_interval_ms, [this] () {
+            emit collectNextTask();
+        });
     }
 }

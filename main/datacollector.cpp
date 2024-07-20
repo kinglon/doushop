@@ -174,10 +174,35 @@ void DataCollector::onHttpFinished(QNetworkReply *reply)
 
 bool DataCollector::parseData1(const QJsonObject& root)
 {
-    // todo by yejinlong, 未登录的情况处理
-    if (!root.contains("code") || root["code"].toInt() != 0 || !root.contains("data"))
+    if (!root.contains("code"))
     {
-        qCritical("response error, code is %d", root["code"].toInt());
+        qCritical("response error, there is not code field");
+        emit runFinish(COLLECT_ERROR);
+        return false;
+    }
+
+    QString code = root["code"].toString();
+    if (root["code"].isDouble())
+    {
+        code = QString::number(root["code"].toInt());
+    }
+
+    if (code == "10008")
+    {
+        qCritical("response error, relogin");
+        emit runFinish(COLLECT_ERROR_NOT_LOGIN);
+        return false;
+    }
+    else if (code != "0")
+    {
+        qCritical("response error, code is %s", code.toStdString().c_str());
+        emit runFinish(COLLECT_ERROR);
+        return false;
+    }
+
+    if (!root.contains("data"))
+    {
+        qCritical("response error, not have data field");
         emit runFinish(COLLECT_ERROR);
         return false;
     }
@@ -208,7 +233,7 @@ bool DataCollector::parseData1(const QJsonObject& root)
         if (dataItemJson.contains("comment_time"))
         {
             int commentTime = dataItemJson["comment_time"].toInt();
-            comment.m_commentTime = QDateTime::fromSecsSinceEpoch(commentTime, Qt::UTC).toString("yyyy/MM/dd HH:mm:ss");
+            comment.m_commentTime = QDateTime::fromSecsSinceEpoch(commentTime, Qt::LocalTime).toString("yyyy/MM/dd HH:mm:ss");
         }
 
         if (dataItemJson.contains("product_id"))

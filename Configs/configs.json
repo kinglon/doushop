@@ -2,6 +2,7 @@
     "log_level":2,
     "enable_webview_log":0,
     "cache_jscode":1,
+    "request_interval_ms": 100,
     "browser_width":1920,
     "browser_height":1080
 }

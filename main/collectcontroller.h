@@ -13,8 +13,8 @@ public:
 public:
     void run();
 
-    // 保存采集结果并打开目录
-    static bool saveCollectResult();
+    // 保存采集结果并打开目录，返回保存路径，空表示保存失败
+    static QString saveCollectResult();
 
 private:
     void finishCurrentTask(const QVector<Comment>& dataModel, bool hasMoreData);
