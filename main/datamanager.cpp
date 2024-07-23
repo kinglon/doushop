@@ -11,7 +11,7 @@
 
 DataManager::DataManager()
 {
-
+    load();
 }
 
 DataManager* DataManager::getInstance()

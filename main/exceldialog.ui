@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>合并表格</string>
+   <string>表格处理</string>
   </property>
   <widget class="QWidget" name="">
    <property name="geometry">

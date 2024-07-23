@@ -38,11 +38,13 @@ void ExcelDialog::initCtrls()
     ui->commentLevelComboBox->setCurrentIndex(0);
 
     QDateTime currentDateTime = QDateTime::currentDateTime();
-    ui->shippingEndDateTimeEdit->setDateTime(currentDateTime);
-    ui->commentEndDateTimeEdit->setDateTime(currentDateTime);
     currentDateTime.setTime(QTime(0, 0, 0));
     ui->shippingBeginDateTimeEdit->setDateTime(currentDateTime);
     ui->commentBeginDateTimeEdit->setDateTime(currentDateTime);
+
+    QDateTime nextDate = currentDateTime.addDays(1);
+    ui->shippingEndDateTimeEdit->setDateTime(nextDate);
+    ui->commentEndDateTimeEdit->setDateTime(nextDate);
 
     connect(ui->selectJushuitanButton, &QPushButton::clicked, [this]() {
         QString filePath = selectLocalFile();
@@ -191,10 +193,13 @@ bool ExcelDialog::selectOrderComment(QVector<OrderComment>& orderComments)
             continue;
         }
 
-        qint64 shippingTimeUtc = orderComment.m_order.getShippingTimeUtc();
-        if (shippingTimeUtc < shippingBeginTime || shippingTimeUtc > shippingEndTime)
+        if (!orderComment.m_order.m_shippingDate.isEmpty())
         {
-            continue;
+            qint64 shippingTimeUtc = orderComment.m_order.getShippingTimeUtc();
+            if (shippingTimeUtc < shippingBeginTime || shippingTimeUtc > shippingEndTime)
+            {
+                continue;
+            }
         }
 
         qint64 commentTimeUtc = orderComment.m_comment.getCommentTimeUtc();
@@ -374,6 +379,11 @@ void ExcelDialog::onExportCommentLevelSummary()
     QVector<QVector<QString>> datas;
     for (auto& levelSummary : levelSummaries)
     {
+        if (levelSummary.m_goodsName.isEmpty())
+        {
+            continue;
+        }
+
         if (levelSummary.m_goodsName != currentGoodsName)
         {
             QVector<QString> data = empty;
@@ -394,7 +404,7 @@ void ExcelDialog::onExportCommentLevelSummary()
         QVector<QString> data = empty;
         data[2] = levelSummary.m_commentLevel;
         data[3] = QString::number(levelSummary.m_commentCount);
-        data[4] = QString::number(levelSummary.m_commentRatio, 'f', 2);
+        data[4] = QString::number(levelSummary.m_commentRatio, 'f', 2) + "%";
         datas.append(data);
     }
 
