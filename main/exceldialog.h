@@ -5,6 +5,7 @@
 #include <QThread>
 #include "myprogressdialog.h"
 #include "excelhandler.h"
+#include "datamanager.h"
 
 namespace Ui {
 class ExcelDialog;
@@ -23,25 +24,19 @@ private:
 
     QString selectLocalFile();
 
-    void merge();
+    int getColumnIndex(const QVector<QString>& header, QString columnName);
+
+    bool selectOrderComment(QVector<OrderComment>& orderComments);
 
 private:
     virtual void closeEvent(QCloseEvent *e) override;
 
 public slots:
-    void onMergeFinish(bool ok);
+    void onImportJushuitanData();
 
-signals:
-    void mergeSignal(QString gudongFilePath, QString nianbaoFilePath);
+    void onExportCommentContentSummary();
 
-private:
-    QThread m_workerThread;
-
-    MyProgressDialog* m_progressDlg = nullptr;
-
-    QTimer* m_progressTimer = nullptr;
-
-    ExcelHandler* m_excelHandler = nullptr;
+    void onExportCommentLevelSummary();
 
 private:
     Ui::ExcelDialog *ui;

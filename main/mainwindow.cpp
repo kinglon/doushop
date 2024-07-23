@@ -11,6 +11,7 @@
 #include "collectcontroller.h"
 #include "exceldialog.h"
 #include "browserwindow.h"
+#include "datamanager.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -278,17 +279,8 @@ void MainWindow::onContinueCollectBtn()
 void MainWindow::onStopCollectBtn()
 {
     m_isCollecting = false;
-    updateButtonStatus();
-
-    // 保存采集结果并打开保存目录
-    QString savedFilePath = CollectController::saveCollectResult();
-    if (savedFilePath.isEmpty())
-    {
-        UiUtil::showTip(QString::fromWCharArray(L"保存采集结果到表格失败"));
-        return;
-    }
-
-    addLog(QString::fromWCharArray(L"保存采集结果到%1").arg(savedFilePath));
+    QVector<Comment>& comments = CollectStatusManager::getInstance()->getCollectDatas();
+    DataManager::getInstance()->addComments(comments);
     CollectStatusManager::getInstance()->reset();
     updateButtonStatus();
 }

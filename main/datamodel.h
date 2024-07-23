@@ -2,6 +2,7 @@
 #define DATAMODEL_H
 
 #include <QString>
+#include <QDateTime>
 
 class Shop
 {
@@ -60,6 +61,71 @@ public:
 
     // 评价内容
     QString m_commentContent;
+
+public:
+    // 获取评价时间的Utc时间
+    qint64 getCommentTimeUtc() const
+    {
+        QDateTime dateTime = QDateTime::fromString(m_commentTime, "yyyy/MM/dd hh:mm:ss");
+        if (!dateTime.isValid())
+        {
+            return 0;
+        }
+        dateTime.setTimeSpec(Qt::LocalTime);
+        return dateTime.toSecsSinceEpoch();
+    }
+};
+
+class Order
+{
+public:
+    // 订单编号
+    QString m_orderId;
+
+    // 发货日期
+    QString m_shippingDate;
+
+    // 发货仓
+    QString m_shippingWareHouse;
+
+    // 商品简名
+    QString m_goodsName;
+
+    // 达人名称
+    QString m_darenName;
+
+public:
+    // 获取发货时间的Utc时间
+    qint64 getShippingTimeUtc() const
+    {
+        QDateTime dateTime = QDateTime::fromString(m_shippingDate, "yyyy-MM-dd hh:mm:ss");
+        if (!dateTime.isValid())
+        {
+            return 0;
+        }
+        dateTime.setTimeSpec(Qt::LocalTime);
+        return dateTime.toSecsSinceEpoch();
+    }
+};
+
+// 评价等级统计
+class CommentLevelSummary
+{
+public:
+    // 商品简称
+    QString m_goodsName;
+
+    // 仓库
+    QString m_wareHouse;
+
+    // 评价等级
+    QString m_commentLevel;
+
+    // 评价数量
+    int m_commentCount = 0;
+
+    // 评价比例
+    float m_commentRatio = 0.0f;
 };
 
 #endif // DATAMODEL_H

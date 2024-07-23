@@ -19,9 +19,11 @@ SOURCES += \
     collectcontroller.cpp \
     collectstatusmanager.cpp \
     datacollector.cpp \
+    datamanager.cpp \
     datamodel.cpp \
     exceldialog.cpp \
     excelhandler.cpp \
+    excelutil.cpp \
     gettextdialog.cpp \
     loginutil.cpp \
     main.cpp \
@@ -44,9 +46,11 @@ HEADERS += \
     collectcontroller.h \
     collectstatusmanager.h \
     datacollector.h \
+    datamanager.h \
     datamodel.h \
     exceldialog.h \
     excelhandler.h \
+    excelutil.h \
     gettextdialog.h \
     loginutil.h \
     mainwindow.h \
