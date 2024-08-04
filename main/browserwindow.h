@@ -5,6 +5,7 @@
 #include <QWebEngineView>
 #include <QCloseEvent>
 #include <QWebEnginePage>
+#include <QWebEngineProfile>
 
 namespace Ui {
 class BrowserWindow;
@@ -60,6 +61,9 @@ public:
     // 清除cookie
     void cleanCookie();
 
+    // 设置Profile名字
+    void setProfileName(const QString& name);
+
 signals:
     // 加载网页完成
     void loadFinished(bool ok);
@@ -74,12 +78,17 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private:
+    QWebEnginePage* createPage(const QString& profileName);
+
+private:
     QWebEngineView* m_webView = nullptr;
 
     bool m_canClose = false;
 
     // 关闭窗口是否变成隐藏窗口
     bool m_hideWhenClose = false;
+
+    QWebEngineProfile* m_profile = nullptr;
 };
 
 #endif // BROWSERWINDOW_H

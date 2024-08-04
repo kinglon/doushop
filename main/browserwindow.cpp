@@ -27,7 +27,7 @@ BrowserWindow::BrowserWindow(QWidget *parent) :
     m_webView(new QWebEngineView(this))
 {    
     setWindowTitle(QString::fromStdWString(L"浏览器"));
-    m_webView->setPage(new WebEnginePage(m_webView));
+    m_webView->setPage(createPage(""));
     m_webView->resize(QSize(1920,1080));
     setWindowState(windowState() | Qt::WindowMaximized);
     connect(m_webView->page(), &QWebEnginePage::loadFinished,this, &BrowserWindow::onLoadFinished);
@@ -102,6 +102,18 @@ void BrowserWindow::cleanCookie()
     cookieStore->deleteAllCookies();
 }
 
+void BrowserWindow::setProfileName(const QString& name)
+{
+    m_webView->page()->deleteLater();
+    if (m_profile)
+    {
+        m_profile->deleteLater();
+        m_profile = nullptr;
+    }
+
+    m_webView->setPage(createPage(name));
+}
+
 void BrowserWindow::onLoadFinished(bool ok)
 {
     qInfo("finish to load url: %s, result: %s", getUrl().toStdString().c_str(), ok?"success":"failed");
@@ -124,5 +136,21 @@ void BrowserWindow::closeEvent(QCloseEvent *event)
     else
     {
         event->ignore();
+    }
+}
+
+QWebEnginePage* BrowserWindow::createPage(const QString& profileName)
+{
+    if (profileName.isEmpty())
+    {
+        return new WebEnginePage(m_webView);
+    }
+    else
+    {
+        if (m_profile == nullptr)
+        {
+            m_profile = new QWebEngineProfile(profileName, this);
+        }
+        return new WebEnginePage(m_profile, m_webView);
     }
 }
