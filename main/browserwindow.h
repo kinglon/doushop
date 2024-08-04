@@ -6,6 +6,7 @@
 #include <QCloseEvent>
 #include <QWebEnginePage>
 #include <QWebEngineProfile>
+#include <QWebEngineUrlRequestInterceptor>
 
 namespace Ui {
 class BrowserWindow;
@@ -64,6 +65,9 @@ public:
     // 设置Profile名字
     void setProfileName(const QString& name);
 
+    // 设置请求拦截器
+    void setRequestInterceptor(QWebEngineUrlRequestInterceptor* requestInterceptor);
+
 signals:
     // 加载网页完成
     void loadFinished(bool ok);
@@ -89,6 +93,8 @@ private:
     bool m_hideWhenClose = false;
 
     QWebEngineProfile* m_profile = nullptr;
+
+    QWebEngineUrlRequestInterceptor* m_requestInterceptor = nullptr;
 };
 
 #endif // BROWSERWINDOW_H

@@ -114,6 +114,15 @@ void BrowserWindow::setProfileName(const QString& name)
     m_webView->setPage(createPage(name));
 }
 
+void BrowserWindow::setRequestInterceptor(QWebEngineUrlRequestInterceptor* requestInterceptor)
+{
+    m_requestInterceptor = requestInterceptor;
+    if (m_webView->page() && m_webView->page()->profile())
+    {
+        m_webView->page()->profile()->setRequestInterceptor(requestInterceptor);
+    }
+}
+
 void BrowserWindow::onLoadFinished(bool ok)
 {
     qInfo("finish to load url: %s, result: %s", getUrl().toStdString().c_str(), ok?"success":"failed");
@@ -141,9 +150,10 @@ void BrowserWindow::closeEvent(QCloseEvent *event)
 
 QWebEnginePage* BrowserWindow::createPage(const QString& profileName)
 {
+    QWebEnginePage* page = nullptr;
     if (profileName.isEmpty())
     {
-        return new WebEnginePage(m_webView);
+        page = new WebEnginePage(m_webView);
     }
     else
     {
@@ -151,6 +161,13 @@ QWebEnginePage* BrowserWindow::createPage(const QString& profileName)
         {
             m_profile = new QWebEngineProfile(profileName, this);
         }
-        return new WebEnginePage(m_profile, m_webView);
+        page = new WebEnginePage(m_profile, m_webView);
     }
+
+    if (m_requestInterceptor)
+    {
+        page->setUrlRequestInterceptor(m_requestInterceptor);
+    }
+
+    return page;
 }
