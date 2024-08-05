@@ -58,18 +58,6 @@ QByteArray DataCollector::intArrayToByteArray(int datas[], int size)
     return byteArray;
 }
 
-void DataCollector::httpGetData1()
-{
-    if (m_networkAccessManager == nullptr)
-    {
-        return;
-    }
-
-    QNetworkRequest request;
-    prepareGetData1Request(request);
-    m_networkAccessManager->get(request);
-}
-
 void DataCollector::addCommonHeader(QNetworkRequest& request)
 {
     request.setRawHeader("Content-Type", "application/json");
@@ -171,8 +159,7 @@ bool DataCollector::parseData1(const QJsonObject& root)
         return false;
     }
 
-    QJsonArray datasJson = root["data"].toArray();
-    parseData1Array(datasJson, m_dataModel);
+    parseData1Array(root["data"], m_dataModel);
 
     if (m_dataModel.size() < m_pageSize)
     {

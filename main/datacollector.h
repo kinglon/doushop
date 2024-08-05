@@ -39,7 +39,7 @@ public:
     static QByteArray intArrayToByteArray(int datas[], int size);
 
 protected:
-    void httpGetData1();
+    virtual void httpGetData1() = 0;
 
     void addCommonHeader(QNetworkRequest& request);
 
@@ -47,12 +47,8 @@ protected:
 
     bool parseData1(const QJsonObject& dataJson);
 
-protected:
-    // 准备获取数据的请求对象
-    virtual void prepareGetData1Request(QNetworkRequest& request) = 0;
-
     // 解析最终数据
-    virtual void parseData1Array(const QJsonArray& dataJson, QVector<QVector<QString>>& datas) = 0;
+    virtual void parseData1Array(const QJsonValue& dataJson, QVector<QVector<QString>>& datas) = 0;
 
 private slots:
     void onHttpFinished(QNetworkReply *reply);
@@ -70,14 +66,14 @@ protected:
 
     Shop m_shop;
 
+    static QNetworkAccessManager *m_networkAccessManager;
+
 private:
     QVector<QVector<QString>> m_dataModel;
 
     int m_retryCount = 0;
 
-    int m_currentStep = COLLECT_STEP_INIT;
-
-    static QNetworkAccessManager *m_networkAccessManager;
+    int m_currentStep = COLLECT_STEP_INIT;    
 
     // 网络请求超时时长，单位秒
     int m_networkTimeout = 5;

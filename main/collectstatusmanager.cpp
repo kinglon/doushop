@@ -46,6 +46,16 @@ void CollectStatusManager::finishCurrentTask(const QVector<QVector<QString>>& da
     m_nextPageIndex = 0;
 }
 
+int CollectStatusManager::getTaskType()
+{
+    if (m_collectTasks.length() == 0)
+    {
+        return TASK_TYPE_UNKNOWN;
+    }
+
+    return m_collectTasks[0].m_type;
+}
+
 void CollectStatusManager::reset()
 {
     m_nextTaskIndex = 0;

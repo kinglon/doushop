@@ -6,6 +6,7 @@
 #include "datamodel.h"
 
 // 任务类型
+#define TASK_TYPE_UNKNOWN   0   // 未知
 #define TASK_TYPE_COMMENT   1   // 商品评论
 #define TASK_TYPE_AFTERSELL 2   // 售后单
 #define TASK_TYPE_PAY       3   // 打款记录
@@ -29,7 +30,7 @@ public:
     QString m_shopId;
 
     // 任务类型
-    int m_type = TASK_TYPE_COMMENT;
+    int m_type = TASK_TYPE_UNKNOWN;
 };
 
 class CollectStatusManager
@@ -58,6 +59,8 @@ public:
     void finishCurrentTask(const QVector<QVector<QString>>& dataModel);
 
     bool isFinish() { return m_nextTaskIndex >= m_collectTasks.size(); }
+
+    int getTaskType();
 
     void reset();
 

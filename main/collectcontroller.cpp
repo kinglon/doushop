@@ -2,6 +2,7 @@
 #include "collectstatusmanager.h"
 #include "shopmanager.h"
 #include "commentdatacollector.h"
+#include "afterselldatacollector.h"
 #include "Utility/ImPath.h"
 #include "settingmanager.h"
 
@@ -29,11 +30,27 @@ void CollectController::run()
 
 QString CollectController::saveCollectResult()
 {
-    // 拷贝默认采集结果输出表格到保存目录
-    QString excelFileName = QString::fromWCharArray(L"采集结果.xlsx");
-    QString srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + excelFileName;
-    QString destExcelFileName = QString::fromWCharArray(L"商品评论-") + QDateTime::currentDateTime().toString("yyyyMMdd_hhmm") + ".xlsx";
-    QString destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + destExcelFileName;
+    QString srcExcelFilePath;
+    QString destExcelFilePath;
+    QString now = QDateTime::currentDateTime().toString("yyyyMMdd_hhmm");
+    int taskType = CollectStatusManager::getInstance()->getTaskType();
+    if (taskType == TASK_TYPE_COMMENT)
+    {
+        srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + QString::fromWCharArray(L"商品评论表格模板.xlsx");
+        destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"商品评论-") + now + ".xlsx";
+    }
+    else if (taskType == TASK_TYPE_AFTERSELL)
+    {
+        srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + QString::fromWCharArray(L"售后单表格模板.xlsx");
+        destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"售后单-") + now + ".xlsx";
+    }
+    else
+    {
+        qCritical("unknown task type");
+        return "";
+    }
+
+    // 拷贝模板文件作为初始文件
     ::DeleteFile(destExcelFilePath.toStdWString().c_str());
     if (!::CopyFile(srcExcelFilePath.toStdWString().c_str(), destExcelFilePath.toStdWString().c_str(), TRUE))
     {
@@ -100,6 +117,10 @@ void CollectController::onCollectNextTask()
     if (task.m_type == TASK_TYPE_COMMENT)
     {
         collector = new CommentDataCollector(this);
+    }
+    else if (task.m_type == TASK_TYPE_AFTERSELL)
+    {
+        collector = new AfterSellDataCollector(this);
     }
     else
     {

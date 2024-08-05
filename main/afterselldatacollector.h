@@ -1,14 +1,12 @@
-﻿#ifndef COMMENTDATACOLLECTOR_H
-#define COMMENTDATACOLLECTOR_H
+﻿#ifndef AFTERSELLDATACOLLECTOR_H
+#define AFTERSELLDATACOLLECTOR_H
 
 #include "datacollector.h"
 
-class CommentDataCollector : public DataCollector
+class AfterSellDataCollector : public DataCollector
 {
-    Q_OBJECT
-
 public:
-    explicit CommentDataCollector(QObject *parent = nullptr);
+    explicit AfterSellDataCollector(QObject *parent = nullptr);
 
 protected:
     virtual void httpGetData1() override;
@@ -17,4 +15,4 @@ protected:
     virtual void parseData1Array(const QJsonValue& dataJson, QVector<QVector<QString>>& datas) override;
 };
 
-#endif // COMMENTDATACOLLECTOR_H
+#endif // AFTERSELLDATACOLLECTOR_H

@@ -9,8 +9,13 @@ CommentDataCollector::CommentDataCollector(QObject *parent)
 
 }
 
-void CommentDataCollector::prepareGetData1Request(QNetworkRequest& request)
+void CommentDataCollector::httpGetData1()
 {
+    if (DataCollector::m_networkAccessManager == nullptr)
+    {
+        return;
+    }
+
     QString url = "https://fxg.jinritemai.com/product/tcomment/commentList?rank=0&content_search=0&reply_search=0&appeal_search=0&random=0.6537696171371234&appid=1&_lid=";
     QMap<QString, QString> otherQuery;
     if (!m_task.m_goodsInfo.isEmpty())
@@ -44,13 +49,15 @@ void CommentDataCollector::prepareGetData1Request(QNetworkRequest& request)
 
     url += otherQueryString;
 
+    QNetworkRequest request;
     request.setUrl(QUrl(url));
     addCommonHeader(request);
+    DataCollector::m_networkAccessManager->get(request);
 }
 
-void CommentDataCollector::parseData1Array(const QJsonArray& datasJson, QVector<QVector<QString>>& datas)
+void CommentDataCollector::parseData1Array(const QJsonValue& datasJson, QVector<QVector<QString>>& datas)
 {
-    for (auto dataJson : datasJson)
+    for (auto dataJson : datasJson.toArray())
     {
         QJsonObject dataItemJson = dataJson.toObject();
         QVector<QString> data;

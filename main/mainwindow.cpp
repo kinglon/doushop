@@ -296,7 +296,7 @@ void MainWindow::onStopCollectBtn()
         return;
     }
 
-    addLog(QString::fromWCharArray(L"保存采集结果到%1").arg(savedFilePath));
+    addLog(QString::fromWCharArray(L"保存采集结果到: %1").arg(savedFilePath));
     CollectStatusManager::getInstance()->reset();
     updateButtonStatus();
 }

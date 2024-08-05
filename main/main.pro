@@ -15,6 +15,7 @@ SOURCES += \
     Utility/ImPath.cpp \
     Utility/LogBuffer.cpp \
     Utility/LogUtil.cpp \
+    afterselldatacollector.cpp \
     browserwindow.cpp \
     collectcontroller.cpp \
     collectstatusmanager.cpp \
@@ -41,6 +42,7 @@ HEADERS += \
     Utility/LogBuffer.h \
     Utility/LogMacro.h \
     Utility/LogUtil.h \
+    afterselldatacollector.h \
     browserwindow.h \
     collectcontroller.h \
     collectstatusmanager.h \
