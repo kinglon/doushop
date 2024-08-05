@@ -17,7 +17,7 @@ public:
     static QString saveCollectResult();
 
 private:
-    void finishCurrentTask(const QVector<Comment>& dataModel, bool hasMoreData);
+    void finishCurrentTask(const QVector<QVector<QString>>& dataModel, bool hasMoreData);
 
 private slots:
     void onPrintLog(QString content);

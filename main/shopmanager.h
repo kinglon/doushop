@@ -21,6 +21,8 @@ public:
 
     void updateLoginInfo(const Shop& shop);
 
+    void resetLoginInfo(QString id);
+
 private:
     void load();
 

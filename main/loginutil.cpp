@@ -38,7 +38,7 @@ void LoginUtil::run()
     BrowserWindow::getInstance()->setWebViewSize(QSize(CSettingManager::GetInstance()->m_browserWidth,
                                                        CSettingManager::GetInstance()->m_browserHeight));
     BrowserWindow::getInstance()->showMaximized();
-    BrowserWindow::getInstance()->cleanCookie();
+    BrowserWindow::getInstance()->setProfileName(m_shop.m_id);
 
     m_currentStep = STEP_LOADURL;
     m_stepRetryCount = 0;
@@ -152,8 +152,7 @@ void LoginUtil::runJsCodeFinish(bool ok, const QMap<QString, QString>& result)
         }
 
         if (m_shop.isLogin())
-        {
-            BrowserWindow::getInstance()->cleanCookie();
+        {            
             stepGetLoginInfoFinish(true);
         }
     }

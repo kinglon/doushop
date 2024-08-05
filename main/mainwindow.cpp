@@ -180,6 +180,8 @@ void MainWindow::onLoginShopBtn(QString shopId)
     connect(m_loginUtil, &LoginUtil::runFinish, [this](bool success) {
         if (!success)
         {
+            ShopManager::getInstance()->resetLoginInfo(m_loginUtil->getShop().m_id);
+            updateListItemCtrl(m_loginUtil->getShop().m_id);
             addLog(QString::fromWCharArray(L"登录失败"));
         }
         else
@@ -266,9 +268,9 @@ void MainWindow::onContinueCollectBtn()
         updateButtonStatus();
 
         if (success)
-        {
-            addLog(QString::fromWCharArray(L"采集完成"));
+        {            
             onStopCollectBtn();
+            addLog(QString::fromWCharArray(L"采集完成"));
         }
         collectController->deleteLater();
     });

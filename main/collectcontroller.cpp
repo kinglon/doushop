@@ -32,7 +32,7 @@ QString CollectController::saveCollectResult()
     // 拷贝默认采集结果输出表格到保存目录
     QString excelFileName = QString::fromWCharArray(L"采集结果.xlsx");
     QString srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + excelFileName;
-    QString destExcelFileName = QDateTime::currentDateTime().toString("yyyyMMdd_hhmm") + ".xlsx";
+    QString destExcelFileName = QString::fromWCharArray(L"商品评论-") + QDateTime::currentDateTime().toString("yyyyMMdd_hhmm") + ".xlsx";
     QString destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + destExcelFileName;
     ::DeleteFile(destExcelFilePath.toStdWString().c_str());
     if (!::CopyFile(srcExcelFilePath.toStdWString().c_str(), destExcelFilePath.toStdWString().c_str(), TRUE))
@@ -53,13 +53,10 @@ QString CollectController::saveCollectResult()
     int row = 2;
     for (const auto& data : datas)
     {
-        xlsx.write(row, 1, data.m_shopName);
-        xlsx.write(row, 2, data.m_orderId);
-        xlsx.write(row, 3, data.m_goodsInfo);
-        xlsx.write(row, 4, data.m_goodsId);
-        xlsx.write(row, 5, data.m_commentTime);
-        xlsx.write(row, 6, data.m_commentLevel);
-        xlsx.write(row, 7, data.m_commentContent);
+        for (int column=1; column<=data.length(); column++)
+        {
+            xlsx.write(row, column, data[column-1]);
+        }
         row++;
     }
 
@@ -125,7 +122,7 @@ void CollectController::onCollectNextTask()
     collector->run();
 }
 
-void CollectController::finishCurrentTask(const QVector<Comment>& dataModel, bool hasMoreData)
+void CollectController::finishCurrentTask(const QVector<QVector<QString>>& dataModel, bool hasMoreData)
 {
     if (hasMoreData)
     {

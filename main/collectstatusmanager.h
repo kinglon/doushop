@@ -33,8 +33,6 @@ public:
     static CollectStatusManager* getInstance();
 
 public:
-    void save();
-
     // 查询是否有任务待采集
     bool hasTaskCollecting() { return m_collectTasks.size() > 0; }
 
@@ -45,18 +43,15 @@ public:
 
     int getNextPageIndex() { return m_nextPageIndex; }
 
-    void finishCurrentPage(const QVector<Comment>& dataModel);
+    void finishCurrentPage(const QVector<QVector<QString>>& dataModel);
 
-    QVector<Comment>& getCollectDatas() { return m_collectDatas; }
+    QVector<QVector<QString>>& getCollectDatas() { return m_collectDatas; }
 
-    void finishCurrentTask(const QVector<Comment>& dataModel);
+    void finishCurrentTask(const QVector<QVector<QString>>& dataModel);
 
     bool isFinish() { return m_nextTaskIndex >= m_collectTasks.size(); }
 
     void reset();
-
-private:
-    void load();
 
 private:
     // 采集任务列表
@@ -69,7 +64,7 @@ private:
     int m_nextPageIndex = 0;
 
     // 采集的结果
-    QVector<Comment> m_collectDatas;
+    QVector<QVector<QString>> m_collectDatas;
 };
 
 #endif // COLLECTSTATUSMANAGER_H

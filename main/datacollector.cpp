@@ -210,48 +210,75 @@ bool DataCollector::parseData1(const QJsonObject& root)
     QJsonArray datasJson = root["data"].toArray();
     for (auto dataJson : datasJson)
     {
-        Comment comment;
-        comment.m_shopName = m_shop.m_name;
-
         QJsonObject dataItemJson = dataJson.toObject();
-        if (dataItemJson.contains("id"))
+        QVector<QString> data;
+
+        // 店铺名称
+        data.append(m_shop.m_name);
+
+        // 订单编号
+        if (dataItemJson.contains("order_id"))
         {
-            comment.m_id = dataItemJson["id"].toString();
+            data.append(dataItemJson["order_id"].toString());
+        }
+        else
+        {
+            data.append("");
         }
 
-        if (dataItemJson.contains("content"))
+        // 商品信息
+        if (dataItemJson.contains("product") && dataItemJson["product"].toObject().contains("name"))
         {
-            comment.m_commentContent = dataItemJson["content"].toString();
+            data.append(dataItemJson["product"].toObject()["name"].toString());
+        }
+        else
+        {
+            data.append("");
         }
 
-        if (dataItemJson.contains("tags") && dataItemJson["tags"].toObject().contains("rank_info")
-                && dataItemJson["tags"].toObject()["rank_info"].toObject().contains("name"))
+        // 商品ID
+        if (dataItemJson.contains("product_id"))
         {
-            comment.m_commentLevel = dataItemJson["tags"].toObject()["rank_info"].toObject()["name"].toString();
+            data.append(dataItemJson["product_id"].toString());
+        }
+        else
+        {
+            data.append("");
         }
 
+        // 评价时间
         if (dataItemJson.contains("comment_time"))
         {
             int commentTime = dataItemJson["comment_time"].toInt();
-            comment.m_commentTime = QDateTime::fromSecsSinceEpoch(commentTime, Qt::LocalTime).toString("yyyy/MM/dd HH:mm:ss");
+            data.append(QDateTime::fromSecsSinceEpoch(commentTime, Qt::LocalTime).toString("yyyy/MM/dd HH:mm:ss"));
         }
-
-        if (dataItemJson.contains("product_id"))
+        else
         {
-            comment.m_goodsId = dataItemJson["product_id"].toString();
+            data.append("");
         }
 
-        if (dataItemJson.contains("product") && dataItemJson["product"].toObject().contains("name"))
+        // 评价等级
+        if (dataItemJson.contains("tags") && dataItemJson["tags"].toObject().contains("rank_info")
+                && dataItemJson["tags"].toObject()["rank_info"].toObject().contains("name"))
         {
-            comment.m_goodsInfo = dataItemJson["product"].toObject()["name"].toString();
+            data.append(dataItemJson["tags"].toObject()["rank_info"].toObject()["name"].toString());
         }
-
-        if (dataItemJson.contains("order_id"))
+        else
         {
-            comment.m_orderId = dataItemJson["order_id"].toString();
+            data.append("");
         }
 
-        m_dataModel.append(comment);
+        // 评价内容
+        if (dataItemJson.contains("content"))
+        {
+            data.append(dataItemJson["content"].toString());
+        }
+        else
+        {
+            data.append("");
+        }
+
+        m_dataModel.append(data);
     }
 
     if (m_dataModel.size() < PAGE_SIZE)

@@ -32,34 +32,15 @@ public:
     {
         return !m_cookies.isEmpty() && !m_token.isEmpty();
     }
-};
 
-class Comment
-{
-public:
-    // id
-    QString m_id;
-
-    // 店铺名称
-    QString m_shopName;
-
-    // 订单编号
-    QString m_orderId;
-
-    // 商品信息
-    QString m_goodsInfo;
-
-    // 商品ID
-    QString m_goodsId;
-
-    // 评价时间
-    QString m_commentTime;
-
-    // 评价等级
-    QString m_commentLevel;
-
-    // 评价内容
-    QString m_commentContent;
+    void resetLoginInfo()
+    {
+        m_cookies = "";
+        m_token = "";
+        m_bid = "";
+        m_aid = "";
+        m_platformSource = "";
+    }
 };
 
 #endif // DATAMODEL_H

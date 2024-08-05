@@ -29,8 +29,7 @@ BrowserWindow::BrowserWindow(QWidget *parent) :
     setWindowTitle(QString::fromStdWString(L"浏览器"));
     m_webView->setPage(createPage(""));
     m_webView->resize(QSize(1920,1080));
-    setWindowState(windowState() | Qt::WindowMaximized);
-    connect(m_webView->page(), &QWebEnginePage::loadFinished,this, &BrowserWindow::onLoadFinished);
+    setWindowState(windowState() | Qt::WindowMaximized);    
 }
 
 BrowserWindow::~BrowserWindow()
@@ -168,6 +167,8 @@ QWebEnginePage* BrowserWindow::createPage(const QString& profileName)
     {
         page->setUrlRequestInterceptor(m_requestInterceptor);
     }
+
+    connect(page, &QWebEnginePage::loadFinished,this, &BrowserWindow::onLoadFinished);
 
     return page;
 }

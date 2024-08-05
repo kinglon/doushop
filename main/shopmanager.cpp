@@ -124,3 +124,18 @@ void ShopManager::updateLoginInfo(const Shop& shop)
 
     save();
 }
+
+
+void ShopManager::resetLoginInfo(QString id)
+{
+    for (auto it = m_shops.begin(); it != m_shops.end(); it++)
+    {
+        if (it->m_id == id)
+        {
+            it->resetLoginInfo();
+            break;
+        }
+    }
+
+    save();
+}

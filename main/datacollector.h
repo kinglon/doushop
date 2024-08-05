@@ -34,7 +34,7 @@ public:
 
     bool run();
 
-    QVector<Comment>& getDataModel() { return m_dataModel; }
+    QVector<QVector<QString>>& getDataModel() { return m_dataModel; }
 
     static QByteArray intArrayToByteArray(int datas[], int size);
 
@@ -61,7 +61,7 @@ private:
 
     int m_page = 0;
 
-    QVector<Comment> m_dataModel;
+    QVector<QVector<QString>> m_dataModel;
 
     int m_retryCount = 0;
 
