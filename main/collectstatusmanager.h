@@ -5,6 +5,11 @@
 #include <QVector>
 #include "datamodel.h"
 
+// 任务类型
+#define TASK_TYPE_COMMENT   1   // 商品评论
+#define TASK_TYPE_AFTERSELL 2   // 售后单
+#define TASK_TYPE_PAY       3   // 打款记录
+
 class CollectTaskItem
 {
 public:
@@ -22,6 +27,9 @@ public:
 
     // 店铺ID
     QString m_shopId;
+
+    // 任务类型
+    int m_type = TASK_TYPE_COMMENT;
 };
 
 class CollectStatusManager

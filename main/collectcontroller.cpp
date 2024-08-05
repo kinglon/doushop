@@ -1,7 +1,7 @@
 ﻿#include "collectcontroller.h"
 #include "collectstatusmanager.h"
 #include "shopmanager.h"
-#include "datacollector.h"
+#include "commentdatacollector.h"
 #include "Utility/ImPath.h"
 #include "settingmanager.h"
 
@@ -96,7 +96,18 @@ void CollectController::onCollectNextTask()
     QString logContent = QString::fromWCharArray(L"采集店铺(%1)第%2页").arg(shop->m_name, QString::number(nextPageIndex+1));
     emit printLog(logContent);
 
-    DataCollector* collector = new DataCollector(this);
+    DataCollector* collector = nullptr;
+    if (task.m_type == TASK_TYPE_COMMENT)
+    {
+        collector = new CommentDataCollector(this);
+    }
+    else
+    {
+        emit printLog(QString::fromWCharArray(L"采集的数据类型不支持"));
+        emit runFinish(false);
+        return;
+    }
+
     collector->setTask(task, *shop, nextPageIndex);
     connect(collector, &DataCollector::runFinish, [collector, this](int errorCode) {
         if (errorCode == COLLECT_SUCCESS)

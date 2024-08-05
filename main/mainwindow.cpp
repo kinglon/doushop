@@ -31,6 +31,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::initCtrls()
 {
+    ui->typeComboBox->addItem(QString::fromWCharArray(L"商品评论"), TASK_TYPE_COMMENT);
+    ui->typeComboBox->addItem(QString::fromWCharArray(L"售后单"), TASK_TYPE_AFTERSELL);
+    ui->typeComboBox->addItem(QString::fromWCharArray(L"小额打款记录"), TASK_TYPE_PAY);
+    ui->typeComboBox->setCurrentIndex(0);
+
     ui->listWidget->setItemDelegate(new MyItemDelegate(ui->listWidget));
     for (const auto& shop : ShopManager::getInstance()->m_shops)
     {
@@ -202,6 +207,7 @@ void MainWindow::onLoginShopBtn(QString shopId)
 void MainWindow::onBeginCollectBtn()
 {
     CollectTaskItem task;
+    task.m_type = ui->typeComboBox->currentData().toInt();
     task.m_goodsInfo = ui->goodsInfoEdit->text();
     task.m_orderId = ui->orderIdEdit->text();
     task.m_beginTime = ui->beginDateTimeEdit->dateTime().toSecsSinceEpoch();

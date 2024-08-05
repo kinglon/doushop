@@ -18,6 +18,7 @@ SOURCES += \
     browserwindow.cpp \
     collectcontroller.cpp \
     collectstatusmanager.cpp \
+    commentdatacollector.cpp \
     datacollector.cpp \
     datamodel.cpp \
     exceldialog.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
     browserwindow.h \
     collectcontroller.h \
     collectstatusmanager.h \
+    commentdatacollector.h \
     datacollector.h \
     datamodel.h \
     exceldialog.h \

@@ -38,7 +38,7 @@ public:
 
     static QByteArray intArrayToByteArray(int datas[], int size);
 
-private:
+protected:
     void httpGetData1();
 
     void addCommonHeader(QNetworkRequest& request);
@@ -47,6 +47,13 @@ private:
 
     bool parseData1(const QJsonObject& dataJson);
 
+protected:
+    // 准备获取数据的请求对象
+    virtual void prepareGetData1Request(QNetworkRequest& request) = 0;
+
+    // 解析最终数据
+    virtual void parseData1Array(const QJsonArray& dataJson, QVector<QVector<QString>>& datas) = 0;
+
 private slots:
     void onHttpFinished(QNetworkReply *reply);
 
@@ -54,13 +61,16 @@ signals:
     // 运行结束
     void runFinish(int errorCode);
 
-private:
+protected:
     CollectTaskItem m_task;
-
-    Shop m_shop;
 
     int m_page = 0;
 
+    int m_pageSize = 20;
+
+    Shop m_shop;
+
+private:
     QVector<QVector<QString>> m_dataModel;
 
     int m_retryCount = 0;
