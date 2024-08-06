@@ -5,6 +5,9 @@
 #include <QFile>
 #include "Utility/ImPath.h"
 #include "Utility/LogMacro.h"
+#include "brotli/decode.h"
+
+int MAX_RETRY_COUNT = 2;
 
 static QJsonObject defaultBodyJson;
 
@@ -124,10 +127,12 @@ void AfterSellDataCollector::parseData1Array(const QJsonValue& datasJson, QVecto
         }
 
         // 商品发货状态
+        QString shippedStatus;
         if (dataItemJson.contains("text_part")
                 && dataItemJson["text_part"].toObject().contains("logistics_shipped_text"))
         {
-            data.append(dataItemJson["text_part"].toObject()["logistics_shipped_text"].toString());
+            shippedStatus = dataItemJson["text_part"].toObject()["logistics_shipped_text"].toString();
+            data.append(shippedStatus);
         }
         else
         {
@@ -182,6 +187,162 @@ void AfterSellDataCollector::parseData1Array(const QJsonValue& datasJson, QVecto
             data.append("");
         }
 
+        // 售后ID，获取快递单号使用，已发货才需要获取
+        static const QString SHIPPED_STATUS = QString::fromWCharArray(L"已发货");
+        if (shippedStatus.indexOf(SHIPPED_STATUS) != -1
+                && dataItemJson.contains("after_sale_info")
+                && dataItemJson["after_sale_info"].toObject().contains("after_sale_id"))
+        {
+            m_afterSaleIds.append(dataItemJson["after_sale_info"].toObject()["after_sale_id"].toString());
+        }
+        else
+        {
+            m_afterSaleIds.append("");
+        }
+
         datas.append(data);
+    }
+}
+
+bool AfterSellDataCollector::doGetData2()
+{
+    if (m_afterSaleIds.empty())
+    {
+        return false;
+    }
+
+    getNextDeliveryId();
+
+    return true;
+}
+
+void AfterSellDataCollector::getNextDeliveryId()
+{
+    if (m_nextIndex >= m_afterSaleIds.size())
+    {
+        getData2Finish(COLLECT_SUCCESS);
+        return;
+    }
+
+    if (m_afterSaleIds[m_nextIndex].isEmpty())
+    {
+        // 无需获取快递号
+        if (m_nextIndex < m_dataModel.size())
+        {
+            // 物流公司+物流单号
+            m_dataModel[m_nextIndex].append("");
+            m_dataModel[m_nextIndex].append("");
+        }
+        m_nextIndex++;
+        getNextDeliveryId();
+        return;
+    }
+
+    m_retryCount = 0;
+    sendDeliveryHttpRequest();
+}
+
+void AfterSellDataCollector::sendDeliveryHttpRequest()
+{
+    QString url = "https://fxg.jinritemai.com/v1/aftersale/pc/detail?order_id=&_lid=";
+    QMap<QString, QString> otherQuery;
+    otherQuery["after_sale_id"] = m_afterSaleIds[m_nextIndex];
+    otherQuery["_bid"] = m_shop.m_bid;
+    otherQuery["aid"] = m_shop.m_aid;
+    otherQuery["aftersale_platform_source"] = m_shop.m_platformSource;
+
+    QString otherQueryString;
+    for (auto it = otherQuery.begin(); it!=otherQuery.end(); it++)
+    {
+        otherQueryString += "&" + it.key() + "=" + it.value();
+    }
+
+    url += otherQueryString;
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(url));
+    addCommonHeader(request);
+    DataCollector::m_networkAccessManager->get(request);
+}
+
+void AfterSellDataCollector::processHttpReply2(QNetworkReply *reply)
+{
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        qCritical("failed to send the http request for delivery, error: %d", reply->error());
+        if (m_retryCount >= MAX_RETRY_COUNT)
+        {
+            getData2Finish(COLLECT_ERROR_CONNECTION_FAILED);
+        }
+        else
+        {
+            QTimer::singleShot(1000, [this]() {
+                m_retryCount++;
+                sendDeliveryHttpRequest();
+            });
+        }
+    }
+    else
+    {
+        QByteArray rawData = reply->readAll();
+        if (reply->rawHeader("Content-Encoding").toStdString() == "br")
+        {
+            size_t outBufferSize = 10*1024*1024;
+            static char* outBuffer = new char[outBufferSize];
+            auto result = BrotliDecoderDecompress((size_t)rawData.length(), (const uint8_t*)rawData.data(), &outBufferSize, (uint8_t*)outBuffer);
+            if (result != BROTLI_DECODER_RESULT_SUCCESS)
+            {
+                qCritical("failed to decompress the brotli response data, error is %d", result);
+                getData2Finish(COLLECT_ERROR);
+                return;
+            }
+            rawData.setRawData((const char*)outBuffer, outBufferSize);
+        }
+
+        QJsonDocument jsonDocument = QJsonDocument::fromJson(rawData);
+        if (jsonDocument.isNull() || jsonDocument.isEmpty())
+        {
+            qCritical("failed to parse the json data");
+            getData2Finish(COLLECT_ERROR);
+            return;
+        }
+
+        QString logisticsName = "";
+        QString logisticsCode = "";
+        if (jsonDocument.object().contains("data")
+                && jsonDocument.object()["data"].toObject().contains("order_info")
+                && jsonDocument.object()["data"].toObject()["order_info"].toObject().contains("order_logistics_info")
+                && jsonDocument.object()["data"].toObject()["order_info"].toObject()["order_logistics_info"].toObject().contains("logistics"))
+        {
+            QJsonArray logistics = jsonDocument.object()["data"].toObject()["order_info"].toObject()["order_logistics_info"].toObject()["logistics"].toArray();
+            if (logistics.size() > 0 && logistics[0].toObject().contains("logistics_code"))
+            {
+                logisticsCode = logistics[0].toObject()["logistics_code"].toString();
+            }
+
+            if (logistics.size() > 0 && logistics[0].toObject().contains("logistics_name"))
+            {
+                logisticsName = logistics[0].toObject()["logistics_name"].toString();
+            }
+        }
+
+        if (!logisticsCode.isEmpty())
+        {
+            if (m_nextIndex < m_dataModel.size())
+            {
+                // 物流公司 + 物流单号
+                m_dataModel[m_nextIndex].append(logisticsName);
+                m_dataModel[m_nextIndex].append(logisticsCode);
+            }
+            m_nextIndex++;
+            getNextDeliveryId();
+            return;
+        }
+        else
+        {
+            qCritical("the delivery id returned by server is empty");
+            getData2Finish(COLLECT_ERROR);
+            return;
+        }
     }
 }

@@ -6,6 +6,7 @@
 #include <QNetworkReply>
 #include <QTimer>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include "datamodel.h"
 #include "collectstatusmanager.h"
 
@@ -19,6 +20,7 @@
 // 采集步骤
 #define COLLECT_STEP_INIT               0
 #define COLLECT_STEP_GET_DATA1          1
+#define COLLECT_STEP_GET_DATA2          2
 
 class DataCollector : public QObject
 {
@@ -50,6 +52,13 @@ protected:
     // 解析最终数据
     virtual void parseData1Array(const QJsonValue& dataJson, QVector<QVector<QString>>& datas) = 0;
 
+    // 采集更多数据，返回false表示已采集完毕，返回true表示还有数据需要采集
+    virtual bool doGetData2() { return false; }
+
+    virtual void processHttpReply2(QNetworkReply *reply) { (void)reply; }
+
+    void getData2Finish(int result);
+
 private slots:
     void onHttpFinished(QNetworkReply *reply);
 
@@ -66,14 +75,15 @@ protected:
 
     Shop m_shop;
 
-    static QNetworkAccessManager *m_networkAccessManager;
-
-private:
     QVector<QVector<QString>> m_dataModel;
+
+    static QNetworkAccessManager *m_networkAccessManager;
 
     int m_retryCount = 0;
 
-    int m_currentStep = COLLECT_STEP_INIT;    
+    int m_currentStep = COLLECT_STEP_INIT;
+
+private:
 
     // 网络请求超时时长，单位秒
     int m_networkTimeout = 5;

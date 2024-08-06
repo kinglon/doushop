@@ -115,11 +115,34 @@ void DataCollector::processHttpReply1(QNetworkReply *reply)
     }
 }
 
+void DataCollector::getData2Finish(int result)
+{
+    if (result != COLLECT_SUCCESS)
+    {
+        emit runFinish(result);
+    }
+    else
+    {
+        if (m_dataModel.size() < m_pageSize)
+        {
+            emit runFinish(COLLECT_SUCCESS);
+        }
+        else
+        {
+            emit runFinish(COLLECT_SUCCESS_MORE_DATA);
+        }
+    }
+}
+
 void DataCollector::onHttpFinished(QNetworkReply *reply)
 {
     if (m_currentStep == COLLECT_STEP_GET_DATA1)
     {
         processHttpReply1(reply);
+    }
+    else if (m_currentStep == COLLECT_STEP_GET_DATA2)
+    {
+        processHttpReply2(reply);
     }
     reply->deleteLater();
 }
@@ -161,13 +184,11 @@ bool DataCollector::parseData1(const QJsonObject& root)
 
     parseData1Array(root["data"], m_dataModel);
 
-    if (m_dataModel.size() < m_pageSize)
+    m_retryCount = 0;
+    m_currentStep = COLLECT_STEP_GET_DATA2;
+    if (!doGetData2())
     {
-        emit runFinish(COLLECT_SUCCESS);
-    }
-    else
-    {
-        emit runFinish(COLLECT_SUCCESS_MORE_DATA);
+        getData2Finish(COLLECT_SUCCESS);
     }
 
     return true;
