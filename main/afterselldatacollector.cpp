@@ -265,11 +265,15 @@ void AfterSellDataCollector::sendDeliveryHttpRequest()
     DataCollector::m_networkAccessManager->get(request);
 }
 
-void AfterSellDataCollector::processHttpReply2(QNetworkReply *reply)
+void AfterSellDataCollector::getDeliveryIdFinish(bool ok)
 {
-    if (reply->error() != QNetworkReply::NoError)
+    if (ok)
     {
-        qCritical("failed to send the http request for delivery, error: %d", reply->error());
+        m_nextIndex++;
+        getNextDeliveryId();
+    }
+    else
+    {
         if (m_retryCount >= MAX_RETRY_COUNT)
         {
             getData2Finish(COLLECT_ERROR_CONNECTION_FAILED);
@@ -281,6 +285,15 @@ void AfterSellDataCollector::processHttpReply2(QNetworkReply *reply)
                 sendDeliveryHttpRequest();
             });
         }
+    }
+}
+
+void AfterSellDataCollector::processHttpReply2(QNetworkReply *reply)
+{
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        qCritical("failed to send the http request for delivery, error: %d", reply->error());
+        getDeliveryIdFinish(false);
     }
     else
     {
@@ -326,7 +339,12 @@ void AfterSellDataCollector::processHttpReply2(QNetworkReply *reply)
             }
         }
 
-        if (!logisticsCode.isEmpty())
+        if (logisticsCode.isEmpty())
+        {
+            qCritical() << "failed to get the delivery id of " << m_afterSaleIds[m_nextIndex];
+            getDeliveryIdFinish(false);
+        }
+        else
         {
             if (m_nextIndex < m_dataModel.size())
             {
@@ -334,15 +352,8 @@ void AfterSellDataCollector::processHttpReply2(QNetworkReply *reply)
                 m_dataModel[m_nextIndex].append(logisticsName);
                 m_dataModel[m_nextIndex].append(logisticsCode);
             }
-            m_nextIndex++;
-            getNextDeliveryId();
-            return;
-        }
-        else
-        {
-            qCritical("the delivery id returned by server is empty");
-            getData2Finish(COLLECT_ERROR);
-            return;
+
+            getDeliveryIdFinish(true);
         }
     }
 }

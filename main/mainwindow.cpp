@@ -71,6 +71,8 @@ void MainWindow::initCtrls()
     connect(ui->excelBtn, &QPushButton::clicked, [this]() {
         onExcelBtn();
     });
+
+    updateButtonStatus();
 }
 
 void MainWindow::updateButtonStatus()

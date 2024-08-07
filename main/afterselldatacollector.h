@@ -24,6 +24,8 @@ protected:
 
     virtual void processHttpReply2(QNetworkReply *reply) override;
 
+    void getDeliveryIdFinish(bool ok);
+
 private:
     // 售后单ID，与最终输出data是对应的
     QVector<QString> m_afterSaleIds;
