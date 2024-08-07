@@ -56,8 +56,6 @@ QString ExcelHandler::removeQuote(const QString& text)
 
 bool ExcelHandler::doMerge(QString excel1FilePath, QString excel2FilePath)
 {
-    QVector<QVector<QString>> results;
-
     Document excel1(excel1FilePath);
     if (!excel1.load())
     {
@@ -65,8 +63,10 @@ bool ExcelHandler::doMerge(QString excel1FilePath, QString excel2FilePath)
         return false;
     }
 
+    // 商品评论表
+    QVector<QVector<QString>> excel1Datas;
     CellRange excel1Range = excel1.dimension();
-    for (int row=2; row <= excel1Range.lastRow(); row++)
+    for (int row=1; row <= excel1Range.lastRow(); row++)
     {
         QVector<QString> rowContents;
         for (int column=1; column <=7; column++)
@@ -88,7 +88,13 @@ bool ExcelHandler::doMerge(QString excel1FilePath, QString excel2FilePath)
             }
         }
 
-        results.push_back(rowContents);
+        excel1Datas.push_back(rowContents);
+    }
+
+    if (excel1Datas.size() < 2)
+    {
+        qCritical("there is not data in excel 1");
+        return false;
     }
 
     Document excel2(excel2FilePath);
@@ -98,9 +104,10 @@ bool ExcelHandler::doMerge(QString excel1FilePath, QString excel2FilePath)
         return false;
     }
 
-    QVector<QVector<QString>> excel2Datas;
+    // 聚水潭表格
+    QVector<QVector<QString>> results;
     CellRange excel2Range = excel2.dimension();
-    for (int row=1; row <= excel2Range.lastRow(); row++)
+    for (int row=2; row <= excel2Range.lastRow(); row++)
     {
         QVector<QString> rowContents;
         for (int column=1; column <=excel2Range.lastColumn(); column++)
@@ -122,72 +129,55 @@ bool ExcelHandler::doMerge(QString excel1FilePath, QString excel2FilePath)
             }
         }
 
-        excel2Datas.push_back(rowContents);
+        results.push_back(rowContents);
     }
 
-    if (excel2Datas.size() == 0)
+    if (results.size() < 1)
     {
-        qCritical("there is not data in load excel 2");
+        qCritical("there is not data in excel 2");
         return false;
     }
 
-    int orderIdIndex = getColumnIndex(excel2Datas[0], QString::fromWCharArray(L"线上子订单编号"));
-    if (orderIdIndex < 0)
-    {
-        qCritical("failed to find the column index in load excel 2");
-        return false;
-    }
-
-    int fahuodateIndex = getColumnIndex(excel2Datas[0], QString::fromWCharArray(L"发货日期"));
-    int fahuochangIndex = getColumnIndex(excel2Datas[0], QString::fromWCharArray(L"发货仓"));
-    int otherAtt1 = getColumnIndex(excel2Datas[0], QString::fromWCharArray(L"其它属性1"));
-    int darenIndex = getColumnIndex(excel2Datas[0], QString::fromWCharArray(L"达人名称"));
-    int indexArray[] = {fahuochangIndex, fahuodateIndex, otherAtt1, darenIndex};
+    // 商品评论表各列的索引
+    int orderIdIndex = getColumnIndex(excel1Datas[0], QString::fromWCharArray(L"订单编号"));
+    int commentTimeIndex = getColumnIndex(excel1Datas[0], QString::fromWCharArray(L"评价时间"));
+    int commentLevelIndex = getColumnIndex(excel1Datas[0], QString::fromWCharArray(L"评价等级"));
+    int commentContentIndex = getColumnIndex(excel1Datas[0], QString::fromWCharArray(L"评价内容"));
+    int indexArray[] = {orderIdIndex, commentTimeIndex, commentLevelIndex, commentContentIndex};
     for (int i=0; i<ARRAYSIZE(indexArray); i++)
     {
         if (indexArray[i] < 0)
         {
-            qCritical("failed to find the column index in load excel 2");
+            qCritical("failed to find the column index in excel 1");
             return false;
         }
-    }
+    }    
+    const int orderIdIndex2 = 2; // 聚水潭表格订单号索引
 
-    const int orderIdIndex2 = 1;
-    for (auto& result : results)
+    // 聚水潭数据+商品评论数据
+    for (int i=0; i < results.size(); i++)
     {
-        bool found = false;
-        for (const auto& excel2Data : excel2Datas)
+        for (int j=1; j < excel1Datas.size(); j++)
         {
-            if (excel2Data.length() > orderIdIndex && excel2Data[orderIdIndex] == result[orderIdIndex2])
+            if (orderIdIndex2 < results[i].length() && orderIdIndex < excel1Datas[j].length()
+                    && results[i][orderIdIndex2] == excel1Datas[j][orderIdIndex])
             {
-                for (int i=0; i<ARRAYSIZE(indexArray); i++)
+                for (int k=1; k<ARRAYSIZE(indexArray); k++)
                 {
-                    if (excel2Data.length() > indexArray[i])
+                    if (indexArray[k] < excel1Datas[j].length())
                     {
-                        result.append(excel2Data[indexArray[i]]);
-                    }
-                    else
-                    {
-                        result.append("");
+                        results[i].append(excel1Datas[j][indexArray[k]]);
                     }
                 }
-                found = true;
-                break;
-            }            
-        }
 
-        if (!found)
-        {
-            for (int i=0; i<ARRAYSIZE(indexArray); i++)
-            {
-                result.append("");
+                break;
             }
         }
     }
 
     // 输出表格
-    QFileInfo fileInfo(excel1FilePath);
-    QString saveFilePath = fileInfo.absolutePath() + QString::fromWCharArray(L"\\评价与聚水潭合并.xlsx");
+    QFileInfo fileInfo(excel2FilePath);
+    QString saveFilePath = fileInfo.absolutePath() + QString::fromWCharArray(L"\\聚水潭商品评论.xlsx");
     if (!saveMergeData(saveFilePath, results))
     {
         qCritical(QString::fromWCharArray(L"保存表格失败").toStdString().c_str());
