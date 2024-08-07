@@ -6,6 +6,8 @@
 #include <QWebEngineCookieStore>
 #include "Utility/ImPath.h"
 
+#define DEFAULT_PROFILE_NAME    "Default"
+
 QWebEnginePage* WebEnginePage::createWindow(WebWindowType)
 {
     WebEnginePage *page = new WebEnginePage(this);
@@ -23,12 +25,11 @@ void WebEnginePage::onUrlChanged(const QUrl & url)
 }
 
 BrowserWindow::BrowserWindow(QWidget *parent) :
-    QMainWindow(parent),
-    m_webView(new QWebEngineView(this))
+    QMainWindow(parent)
 {    
     setWindowTitle(QString::fromStdWString(L"浏览器"));
-    m_webView->resize(QSize(1920,1080));
-    setWindowState(windowState() | Qt::WindowMaximized);    
+    setWindowState(windowState() | Qt::WindowMaximized);
+    setProfileName(DEFAULT_PROFILE_NAME);
 }
 
 BrowserWindow::~BrowserWindow()
@@ -44,7 +45,11 @@ BrowserWindow* BrowserWindow::getInstance()
 
 void BrowserWindow::setWebViewSize(QSize size)
 {
-    m_webView->resize(size);
+    m_webViewSize = size;
+    for (auto it = m_webViews.begin(); it != m_webViews.end(); it++)
+    {
+        (*it)->resize(size);
+    }
 }
 
 void BrowserWindow::load(const QUrl& url)
@@ -102,13 +107,41 @@ void BrowserWindow::cleanCookie()
 
 void BrowserWindow::setProfileName(const QString& name)
 {
-    if (m_webView->page()->profile()->storageName() == name)
+    auto it = m_webViews.find(name);
+    if (it == m_webViews.end())
     {
-        qInfo() << "profile name is the same, not change it";
-        return;
+        QWebEngineView* webView = new QWebEngineView(this);
+        webView->resize(m_webViewSize);
+        if (name != DEFAULT_PROFILE_NAME)
+        {
+            QWebEngineProfile* profile = new QWebEngineProfile(name, this);
+            QWebEnginePage* page = new WebEnginePage(profile, this);
+            webView->setPage(page);
+        }
+        else
+        {
+            QWebEnginePage* page = new WebEnginePage(this);
+            webView->setPage(page);
+        }
+        m_webViews[name] = webView;
     }
 
-    m_webView->setPage(createPage(name));
+    for (auto it = m_webViews.begin(); it != m_webViews.end(); it++)
+    {
+        if (it.key() == name)
+        {
+            it.value()->showNormal();
+            connect(it.value()->page(), &QWebEnginePage::loadFinished, this, &BrowserWindow::onLoadFinished);
+            it.value()->page()->setUrlRequestInterceptor(m_requestInterceptor);
+            m_webView = *it;
+        }
+        else
+        {
+            it.value()->hide();
+            disconnect(it.value()->page(), &QWebEnginePage::loadFinished, this, &BrowserWindow::onLoadFinished);
+            it.value()->page()->setUrlRequestInterceptor(nullptr);
+        }
+    }
 }
 
 void BrowserWindow::setRequestInterceptor(QWebEngineUrlRequestInterceptor* requestInterceptor)
@@ -143,28 +176,4 @@ void BrowserWindow::closeEvent(QCloseEvent *event)
     {
         event->ignore();
     }
-}
-
-QWebEnginePage* BrowserWindow::createPage(const QString& profileName)
-{
-    QWebEnginePage* page = nullptr;
-    auto it = m_pages.find(profileName);
-    if (it != m_pages.end())
-    {
-        page = *it;
-    }
-    else
-    {
-        QWebEngineProfile* profile = new QWebEngineProfile(profileName, this);
-        QWebEnginePage* page = new WebEnginePage(profile, this);
-        connect(page, &QWebEnginePage::loadFinished,this, &BrowserWindow::onLoadFinished);
-        m_pages[profileName] = page;
-    }
-
-    if (m_requestInterceptor)
-    {
-        page->profile()->setUrlRequestInterceptor(m_requestInterceptor);
-    }
-
-    return page;
 }

@@ -82,9 +82,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private:
-    QWebEnginePage* createPage(const QString& profileName);
-
-private:
+    // 当前webview
     QWebEngineView* m_webView = nullptr;
 
     bool m_canClose = false;
@@ -92,8 +90,11 @@ private:
     // 关闭窗口是否变成隐藏窗口
     bool m_hideWhenClose = false;
 
-    // name -> page
-    QMap<QString, QWebEnginePage*> m_pages;
+    // WebView大小
+    QSize m_webViewSize = QSize(1920, 1080);
+
+    // name -> webview
+    QMap<QString, QWebEngineView*> m_webViews;
 
     QWebEngineUrlRequestInterceptor* m_requestInterceptor = nullptr;
 };
