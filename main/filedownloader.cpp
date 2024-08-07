@@ -16,7 +16,8 @@ CURL* FileDownloader::makeDownloadRequest()
         return nullptr;
     }
 
-    curl_easy_setopt(request, CURLOPT_COOKIE, m_cookie.toStdWString().c_str());
+    curl_easy_setopt(request, CURLOPT_HTTP_CONTENT_DECODING, 0L);
+    curl_easy_setopt(request, CURLOPT_COOKIE, m_cookie.toStdString().c_str());
     return request;
 }
 
@@ -52,20 +53,17 @@ void FileDownloader::doDownload(std::string& data)
     }
     curl_multi_add_handle(multiHandle, curl);
 
-    int stillRunning = 0;
-    CURLMcode mc = curl_multi_perform(multiHandle, &stillRunning);
-    if (mc)
-    {
-        qCritical("curl_multi_perform return error: %d", mc);
-        curl_multi_remove_handle(multiHandle, curl);
-        freeRequest(curl);
-        curl_multi_cleanup(multiHandle);
-        return;
-    }
-
     while (!m_requestStop)
     {
-        QThread::sleep(1);
+        QThread::msleep(100);
+
+        int stillRunning = 0;
+        CURLMcode mc = curl_multi_perform(multiHandle, &stillRunning);
+        if (mc)
+        {
+            qCritical("curl_multi_perform return error: %d", mc);
+            break;
+        }
 
         int msgs_left = 0;
         CURLMsg *m = curl_multi_info_read(multiHandle, &msgs_left);
