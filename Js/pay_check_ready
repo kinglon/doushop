@@ -1,0 +1,19 @@
+var jsResult = {};
+jsResult['fun'] = 'check_ready';
+jsResult['ready'] = '0' // 0 not ready, 1 ready, 2 not login
+buttons = document.getElementsByClassName('index_export__2Z_pV')
+for (i=0; i<buttons.length; i++)
+{
+    spans = buttons[i].getElementsByTagName('span')
+    for (j=0; j<spans.length; j++)
+    {
+        if (spans[j].textContent == '导出明细')
+        {
+            jsResult['ready'] = '1'
+            buttons[i].click()
+            break
+        }
+    }
+}
+
+jsResult

@@ -18,17 +18,21 @@ SOURCES += \
     afterselldatacollector.cpp \
     browserwindow.cpp \
     collectcontroller.cpp \
+    collectorbase.cpp \
     collectstatusmanager.cpp \
     commentdatacollector.cpp \
     datacollector.cpp \
     datamodel.cpp \
     exceldialog.cpp \
     excelhandler.cpp \
+    filedownloader.cpp \
     gettextdialog.cpp \
+    httpthread.cpp \
     loginutil.cpp \
     main.cpp \
     mainwindow.cpp \
     myprogressdialog.cpp \
+    paycollector.cpp \
     settingmanager.cpp \
     shopitemwidget.cpp \
     shopmanager.cpp \
@@ -45,16 +49,20 @@ HEADERS += \
     afterselldatacollector.h \
     browserwindow.h \
     collectcontroller.h \
+    collectorbase.h \
     collectstatusmanager.h \
     commentdatacollector.h \
     datacollector.h \
     datamodel.h \
     exceldialog.h \
     excelhandler.h \
+    filedownloader.h \
     gettextdialog.h \
+    httpthread.h \
     loginutil.h \
     mainwindow.h \
     myprogressdialog.h \
+    paycollector.h \
     settingmanager.h \
     shopitemwidget.h \
     shopmanager.h \
@@ -82,4 +90,8 @@ INCLUDEPATH += ../thirdparty/QXlsx/header/
 # brotli
 INCLUDEPATH += ../thirdparty/brotli/include
 LIBS += -L"$$_PRO_FILE_PWD_/../thirdparty/brotli/lib" -lbrotlidec
+
+# curl
+INCLUDEPATH += ../curl/include
+LIBS += -L"$$_PRO_FILE_PWD_/../curl/lib" -llibcurl
 

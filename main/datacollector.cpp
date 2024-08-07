@@ -16,16 +16,9 @@
 QNetworkAccessManager *DataCollector::m_networkAccessManager = nullptr;
 
 DataCollector::DataCollector(QObject *parent)
-    : QObject{parent}
+    : CollectorBase{parent}
 {
 
-}
-
-void DataCollector::setTask(const CollectTaskItem& task, const Shop& shop, int page)
-{
-    m_task = task;
-    m_shop = shop;
-    m_page = page;
 }
 
 bool DataCollector::run()

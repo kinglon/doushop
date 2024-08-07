@@ -13,6 +13,7 @@
 #include "xlsxrichstring.h"
 #include "xlsxworkbook.h"
 #include <QDesktopServices>
+#include "paycollector.h"
 
 using namespace QXlsx;
 
@@ -43,6 +44,11 @@ QString CollectController::saveCollectResult()
     {
         srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + QString::fromWCharArray(L"售后单表格模板.xlsx");
         destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"售后单-") + now + ".xlsx";
+    }
+    else if (taskType == TASK_TYPE_PAY)
+    {
+        srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + QString::fromWCharArray(L"小额打款记录模板.xlsx");
+        destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"小额打款-") + now + ".xlsx";
     }
     else
     {
@@ -113,14 +119,20 @@ void CollectController::onCollectNextTask()
     QString logContent = QString::fromWCharArray(L"采集店铺(%1)第%2页").arg(shop->m_name, QString::number(nextPageIndex+1));
     emit printLog(logContent);
 
-    DataCollector* collector = nullptr;
+    CollectorBase* collector = nullptr;
     if (task.m_type == TASK_TYPE_COMMENT)
     {
         collector = new CommentDataCollector(this);
+        ((DataCollector*)collector)->setPage(nextPageIndex);
     }
     else if (task.m_type == TASK_TYPE_AFTERSELL)
     {
         collector = new AfterSellDataCollector(this);
+        ((DataCollector*)collector)->setPage(nextPageIndex);
+    }
+    else if (task.m_type == TASK_TYPE_PAY)
+    {
+        collector = new PayCollector(this);
     }
     else
     {
@@ -129,8 +141,9 @@ void CollectController::onCollectNextTask()
         return;
     }
 
-    collector->setTask(task, *shop, nextPageIndex);
-    connect(collector, &DataCollector::runFinish, [collector, this](int errorCode) {
+    collector->setTask(task, *shop);
+    connect(collector, &CollectorBase::collectLog, this, &CollectController::onPrintLog);
+    connect(collector, &CollectorBase::runFinish, [collector, this](int errorCode) {
         if (errorCode == COLLECT_SUCCESS)
         {
             finishCurrentTask(collector->getDataModel(), false);
