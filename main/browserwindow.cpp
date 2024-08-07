@@ -27,7 +27,6 @@ BrowserWindow::BrowserWindow(QWidget *parent) :
     m_webView(new QWebEngineView(this))
 {    
     setWindowTitle(QString::fromStdWString(L"浏览器"));
-    m_webView->setPage(createPage(""));
     m_webView->resize(QSize(1920,1080));
     setWindowState(windowState() | Qt::WindowMaximized);    
 }
@@ -109,13 +108,6 @@ void BrowserWindow::setProfileName(const QString& name)
         return;
     }
 
-    m_webView->page()->deleteLater();
-    if (m_profile)
-    {
-        m_profile->deleteLater();
-        m_profile = nullptr;
-    }
-
     m_webView->setPage(createPage(name));
 }
 
@@ -156,25 +148,23 @@ void BrowserWindow::closeEvent(QCloseEvent *event)
 QWebEnginePage* BrowserWindow::createPage(const QString& profileName)
 {
     QWebEnginePage* page = nullptr;
-    if (profileName.isEmpty())
+    auto it = m_pages.find(profileName);
+    if (it != m_pages.end())
     {
-        page = new WebEnginePage(m_webView);
+        page = *it;
     }
     else
     {
-        if (m_profile == nullptr)
-        {
-            m_profile = new QWebEngineProfile(profileName, this);
-        }
-        page = new WebEnginePage(m_profile, m_webView);
+        QWebEngineProfile* profile = new QWebEngineProfile(profileName, this);
+        QWebEnginePage* page = new WebEnginePage(profile, this);
+        connect(page, &QWebEnginePage::loadFinished,this, &BrowserWindow::onLoadFinished);
+        m_pages[profileName] = page;
     }
 
     if (m_requestInterceptor)
     {
-        page->setUrlRequestInterceptor(m_requestInterceptor);
+        page->profile()->setUrlRequestInterceptor(m_requestInterceptor);
     }
-
-    connect(page, &QWebEnginePage::loadFinished,this, &BrowserWindow::onLoadFinished);
 
     return page;
 }

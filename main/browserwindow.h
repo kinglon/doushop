@@ -92,7 +92,8 @@ private:
     // 关闭窗口是否变成隐藏窗口
     bool m_hideWhenClose = false;
 
-    QWebEngineProfile* m_profile = nullptr;
+    // name -> page
+    QMap<QString, QWebEnginePage*> m_pages;
 
     QWebEngineUrlRequestInterceptor* m_requestInterceptor = nullptr;
 };
