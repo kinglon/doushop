@@ -71,8 +71,7 @@ void FileDownloader::doDownload(std::string& data)
         CURLMsg *m = curl_multi_info_read(multiHandle, &msgs_left);
         if (m == nullptr)
         {
-            qCritical() << "failed to call curl_multi_info_read";
-            break;
+            continue;
         }
 
         if (m->msg != CURLMSG_DONE)

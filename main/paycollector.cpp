@@ -249,14 +249,21 @@ void PayCollector::stepLoadUrlFinish(bool ok)
     {
         if (m_stepRetryCount < LOAD_URL_MAX_RETRY_COUNT)
         {
-            emit collectLog(QString::fromWCharArray(L"加载页面超时，重试"));
+            emit collectLog(QString::fromWCharArray(L"加载页面失败，重试"));
             doStepLoadUrl();
             m_stepRetryCount++;
         }
         else
         {
             emit collectLog(QString::fromWCharArray(L"加载页面失败"));
-            emit runFinish(COLLECT_ERROR_CONNECTION_FAILED);
+            if (BrowserWindow::getInstance()->getUrl().indexOf("/login/common") != -1)
+            {
+                emit runFinish(COLLECT_ERROR_NOT_LOGIN);
+            }
+            else
+            {
+                emit runFinish(COLLECT_ERROR_CONNECTION_FAILED);
+            }
         }
     }
     else
@@ -286,7 +293,14 @@ void PayCollector::stepWaitReadyFinish(bool ok, int errorCode)
 
     if (!ok)
     {
-        emit runFinish(errorCode);
+        if (BrowserWindow::getInstance()->getUrl().indexOf("/login/common") != -1)
+        {
+            emit runFinish(COLLECT_ERROR_NOT_LOGIN);
+        }
+        else
+        {
+            emit runFinish(errorCode);
+        }
     }
     else
     {

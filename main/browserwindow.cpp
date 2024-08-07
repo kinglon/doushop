@@ -103,6 +103,12 @@ void BrowserWindow::cleanCookie()
 
 void BrowserWindow::setProfileName(const QString& name)
 {
+    if (m_webView->page()->profile()->storageName() == name)
+    {
+        qInfo() << "profile name is the same, not change it";
+        return;
+    }
+
     m_webView->page()->deleteLater();
     if (m_profile)
     {
