@@ -37,11 +37,13 @@ void PayRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
     QString url = info.requestUrl().toString();
     if (url.indexOf("/shopremit/record/export/download") != -1)
     {
-        m_payCollector->m_downloadUrl = url;
+        m_downloadUrl = url;
         qInfo() << "download url: " << url;
         return;
     }
 }
+
+PayRequestInterceptor* PayCollector::m_requestInterceptor = nullptr;
 
 PayCollector::PayCollector(QObject *parent)
     : CollectorBase{parent},
@@ -59,8 +61,12 @@ PayCollector::PayCollector(QObject *parent)
 
 bool PayCollector::run()
 {
+    if (m_requestInterceptor == nullptr)
+    {
+        m_requestInterceptor = new PayRequestInterceptor(nullptr);
+        BrowserWindow::getInstance()->setRequestInterceptor(m_requestInterceptor);
+    }
     BrowserWindow::getInstance()->setProfileName(m_shop.m_id);
-    BrowserWindow::getInstance()->setRequestInterceptor(new PayRequestInterceptor(this));
 
     m_currentStep = STEP_LOADURL;
     m_stepRetryCount = 0;
@@ -306,6 +312,10 @@ void PayCollector::stepWaitReadyFinish(bool ok, int errorCode)
     {
         m_currentStep = STEP_EXPORT_DATA;
         m_stepRetryCount = 0;
+        if (m_requestInterceptor)
+        {
+            m_requestInterceptor->m_downloadUrl = "";
+        }
         emit collectLog(QString::fromWCharArray(L"导出数据"));
         doStepExportData();
     }
@@ -320,8 +330,9 @@ void PayCollector::doStepExportData()
 void PayCollector::stepExportDataFinish()
 {
     m_stepTimer->stop();
-    if (!m_downloadUrl.isEmpty())
+    if (m_requestInterceptor && !m_requestInterceptor->m_downloadUrl.isEmpty())
     {
+        m_downloadUrl = m_requestInterceptor->m_downloadUrl;
         m_currentStep = STEP_DOWNLOAD_DATA;
         m_stepRetryCount = 0;
         emit collectLog(QString::fromWCharArray(L"下载数据"));

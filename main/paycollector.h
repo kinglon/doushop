@@ -15,21 +15,17 @@
 #define STEP_DOWNLOAD_DATA  4
 #define STEP_FINISH         5
 
-class PayCollector;
 class PayRequestInterceptor : public QWebEngineUrlRequestInterceptor
 {
     Q_OBJECT
 
 public:
-    PayRequestInterceptor(QObject *parent) : QWebEngineUrlRequestInterceptor(parent)
-    {
-        m_payCollector = (PayCollector*)parent;
-    }
+    PayRequestInterceptor(QObject *parent) : QWebEngineUrlRequestInterceptor(parent) {}
 
     void interceptRequest(QWebEngineUrlRequestInfo &info);
 
-private:
-    PayCollector* m_payCollector = nullptr;
+public:
+    QString m_downloadUrl;
 };
 
 
@@ -117,8 +113,9 @@ private:
     // 步骤失败重试次数
     int m_stepRetryCount = 0;
 
-    // 下载地址
     QString m_downloadUrl;
+
+    static PayRequestInterceptor* m_requestInterceptor;
 };
 
 #endif // PAYCOLLECTOR_H

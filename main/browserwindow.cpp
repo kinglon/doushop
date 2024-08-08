@@ -123,6 +123,7 @@ void BrowserWindow::setProfileName(const QString& name)
             QWebEnginePage* page = new WebEnginePage(this);
             webView->setPage(page);
         }
+        webView->page()->profile()->setRequestInterceptor(m_requestInterceptor);
         m_webViews[name] = webView;
     }
 
@@ -130,16 +131,17 @@ void BrowserWindow::setProfileName(const QString& name)
     {
         if (it.key() == name)
         {
-            it.value()->showNormal();
-            connect(it.value()->page(), &QWebEnginePage::loadFinished, this, &BrowserWindow::onLoadFinished);
-            it.value()->page()->setUrlRequestInterceptor(m_requestInterceptor);
-            m_webView = *it;
+            if (m_webView != *it)
+            {
+                it.value()->showNormal();
+                connect(it.value()->page(), &QWebEnginePage::loadFinished, this, &BrowserWindow::onLoadFinished);
+                m_webView = *it;
+            }
         }
         else
         {
             it.value()->hide();
-            disconnect(it.value()->page(), &QWebEnginePage::loadFinished, this, &BrowserWindow::onLoadFinished);
-            it.value()->page()->setUrlRequestInterceptor(nullptr);
+            disconnect(it.value()->page(), &QWebEnginePage::loadFinished, this, &BrowserWindow::onLoadFinished);            
         }
     }
 }
@@ -147,9 +149,9 @@ void BrowserWindow::setProfileName(const QString& name)
 void BrowserWindow::setRequestInterceptor(QWebEngineUrlRequestInterceptor* requestInterceptor)
 {
     m_requestInterceptor = requestInterceptor;
-    if (m_webView->page() && m_webView->page()->profile())
+    for (auto it = m_webViews.begin(); it != m_webViews.end(); it++)
     {
-        m_webView->page()->profile()->setRequestInterceptor(requestInterceptor);
+        (*it)->page()->profile()->setRequestInterceptor(requestInterceptor);
     }
 }
 
