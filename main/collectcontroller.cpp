@@ -17,6 +17,11 @@
 
 using namespace QXlsx;
 
+// 各采集数据ID key索引, 0开始
+#define COMMENT_IDKEY_INDEX     1   // 商品评论
+#define AFTERSALE_IDKEY_INDEX   1   // 售后单
+#define PAY_IDKEY_INDEX         1   // 小额打款
+
 CollectController::CollectController(QObject *parent)
     : QObject{parent}
 {
@@ -26,6 +31,24 @@ CollectController::CollectController(QObject *parent)
 
 void CollectController::run()
 {
+    int taskType = CollectStatusManager::getInstance()->getTaskType();
+    if (taskType == TASK_TYPE_COMMENT)
+    {
+        CollectStatusManager::getInstance()->setKeyIndex(COMMENT_IDKEY_INDEX);
+    }
+    else if (taskType == TASK_TYPE_AFTERSELL)
+    {
+        CollectStatusManager::getInstance()->setKeyIndex(AFTERSALE_IDKEY_INDEX);
+    }
+    else if (taskType == TASK_TYPE_PAY)
+    {
+        CollectStatusManager::getInstance()->setKeyIndex(PAY_IDKEY_INDEX);
+    }
+    else
+    {
+        CollectStatusManager::getInstance()->setKeyIndex(-1);
+    }
+
     emit collectNextTask();
 }
 
@@ -34,19 +57,27 @@ QString CollectController::saveCollectResult()
     QString srcExcelFilePath;
     QString destExcelFilePath;
     QString now = QDateTime::currentDateTime().toString("yyyyMMdd_hhmm");
+    QString idkeyColumnName;
+    int idKeyIndex = -1;
     int taskType = CollectStatusManager::getInstance()->getTaskType();
     if (taskType == TASK_TYPE_COMMENT)
     {
+        idkeyColumnName = QString::fromWCharArray(L"订单编号");
+        idKeyIndex = COMMENT_IDKEY_INDEX;
         srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + QString::fromWCharArray(L"商品评论表格模板.xlsx");
         destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"商品评论-") + now + ".xlsx";
     }
     else if (taskType == TASK_TYPE_AFTERSELL)
     {
+        idkeyColumnName = QString::fromWCharArray(L"订单号");
+        idKeyIndex = AFTERSALE_IDKEY_INDEX;
         srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + QString::fromWCharArray(L"售后单表格模板.xlsx");
         destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"售后单-") + now + ".xlsx";
     }
     else if (taskType == TASK_TYPE_PAY)
     {
+        idkeyColumnName = QString::fromWCharArray(L"订单编号");
+        idKeyIndex = PAY_IDKEY_INDEX;
         srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + QString::fromWCharArray(L"小额打款记录模板.xlsx");
         destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"小额打款-") + now + ".xlsx";
     }
@@ -64,7 +95,7 @@ QString CollectController::saveCollectResult()
         return "";
     }
 
-    // 从第2行开始写
+    // 打开表格文件
     Document xlsx(destExcelFilePath);
     if (!xlsx.load())
     {
@@ -72,6 +103,15 @@ QString CollectController::saveCollectResult()
         return "";
     }
 
+    // 校验IDKEY有没正确
+    Cell* cell = xlsx.cellAt(1, idKeyIndex+1);
+    if (cell == nullptr || cell->value().toString() != idkeyColumnName)
+    {
+        qCritical("the id key column is wrong");
+        return "";
+    }
+
+    // 保存数据到表格， 从第2行开始写
     auto& datas = CollectStatusManager::getInstance()->getCollectDatas();
     int row = 2;
     for (const auto& data : datas)

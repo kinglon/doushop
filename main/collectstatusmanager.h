@@ -64,6 +64,13 @@ public:
 
     void reset();
 
+    // 设置id key索引，用于采集结果去重，-1表示不去重
+    void setKeyIndex(int keyIndex) { m_idKeyIndex = keyIndex; }
+
+private:
+    // 检查采集结果是否已经存在
+    bool isExist(const QVector<QString>& data);
+
 private:
     // 采集任务列表
     QVector<CollectTaskItem> m_collectTasks;
@@ -76,6 +83,9 @@ private:
 
     // 采集的结果
     QVector<QVector<QString>> m_collectDatas;
+
+    // id key索引，用于采集结果去重
+    int m_idKeyIndex = -1;
 };
 
 #endif // COLLECTSTATUSMANAGER_H

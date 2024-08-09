@@ -35,13 +35,27 @@ CollectTaskItem CollectStatusManager::getNextTask()
 
 void CollectStatusManager::finishCurrentPage(const QVector<QVector<QString>>& dataModel)
 {
-    m_collectDatas.append(dataModel);
+    for (auto& data : dataModel)
+    {
+        if (!isExist(data))
+        {
+            m_collectDatas.append(data);
+        }
+    }
+
     m_nextPageIndex++;
 }
 
 void CollectStatusManager::finishCurrentTask(const QVector<QVector<QString>>& dataModel)
 {
-    m_collectDatas.append(dataModel);
+    for (auto& data : dataModel)
+    {
+        if (!isExist(data))
+        {
+            m_collectDatas.append(data);
+        }
+    }
+
     m_nextTaskIndex++;
     m_nextPageIndex = 0;
 }
@@ -58,8 +72,33 @@ int CollectStatusManager::getTaskType()
 
 void CollectStatusManager::reset()
 {
+    m_idKeyIndex = -1;
     m_nextTaskIndex = 0;
     m_nextPageIndex = 0;
     m_collectTasks.clear();
     m_collectDatas.clear();
+}
+
+bool CollectStatusManager::isExist(const QVector<QString>& data)
+{
+    if (m_idKeyIndex < 0)
+    {
+        return false;
+    }
+
+    if (m_idKeyIndex >= data.length())
+    {
+        return false;
+    }
+
+    QString id = data[m_idKeyIndex];
+    for (auto& item : m_collectDatas)
+    {
+        if (m_idKeyIndex < item.length() && item[m_idKeyIndex] == id)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
