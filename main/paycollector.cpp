@@ -38,7 +38,7 @@ void PayRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
     if (url.indexOf("/shopremit/record/export/download") != -1)
     {
         m_downloadUrl = url;
-        qInfo() << "download url: " << url;
+        qInfo("download url: %s", url.toStdString().c_str());
         return;
     }
 }
@@ -378,8 +378,8 @@ void PayCollector::stepDownloadDataFinish(bool ok, std::string* data)
         else
         {
             emit collectLog(QString::fromWCharArray(L"下载数据失败"));
-            qInfo() << "download url : " << m_downloadUrl;
-            qInfo() << "cookie : " << m_shop.m_cookies;
+            qInfo("download url : %s", m_downloadUrl.toStdString().c_str());
+            qInfo("cookie : %s", m_shop.m_cookies.toStdString().c_str());
             emit runFinish(COLLECT_ERROR);
         }
 

@@ -12,7 +12,7 @@ CURL* FileDownloader::makeDownloadRequest()
     CURL* request = makeRequest(m_url, QMap<QString,QString>(), QMap<QString, QString>(), ProxyServer());
     if (request == nullptr)
     {
-        qCritical() << "failed to make the file downloading request";
+        qCritical("failed to make the file downloading request");
         return nullptr;
     }
 
@@ -83,13 +83,13 @@ void FileDownloader::doDownload(std::string& data)
             getResponse(m->easy_handle, statusCode, data);
             if (statusCode != 200)
             {
-                qCritical() << "failed to download file, status code is " << statusCode;
+                qCritical("failed to download file, status code is %d", statusCode);
                 data = "";
             }
         }
         else
         {
-            qCritical() << "failed to download file, result is " << m->data.result;
+            qCritical("failed to download file, result is %d", m->data.result);
         }
 
         break;

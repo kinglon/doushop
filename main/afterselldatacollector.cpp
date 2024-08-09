@@ -341,7 +341,7 @@ void AfterSellDataCollector::processHttpReply2(QNetworkReply *reply)
 
         if (logisticsCode.isEmpty())
         {
-            qCritical() << "failed to get the delivery id of " << m_afterSaleIds[m_nextIndex];
+            qCritical("failed to get the delivery id of %s", m_afterSaleIds[m_nextIndex].toStdString().c_str());
             getDeliveryIdFinish(false);
         }
         else
