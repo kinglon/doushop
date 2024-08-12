@@ -69,7 +69,7 @@ QString CollectController::saveCollectResult()
     }
     else if (taskType == TASK_TYPE_AFTERSELL)
     {
-        idkeyColumnName = QString::fromWCharArray(L"订单号");
+        idkeyColumnName = QString::fromWCharArray(L"售后单");
         idKeyIndex = AFTERSALE_IDKEY_INDEX;
         srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + QString::fromWCharArray(L"售后单表格模板.xlsx");
         destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"售后单-") + now + ".xlsx";

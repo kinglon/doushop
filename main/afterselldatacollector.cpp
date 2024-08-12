@@ -88,6 +88,18 @@ void AfterSellDataCollector::parseData1Array(const QJsonValue& datasJson, QVecto
         // 店铺名称
         data.append(m_shop.m_name);
 
+        // 售后单
+        if (dataItemJson.contains("after_sale_info")
+                && dataItemJson["after_sale_info"].toObject().contains("after_sale_id"))
+        {
+            QString afterSaleId = dataItemJson["after_sale_info"].toObject()["after_sale_id"].toString();
+            data.append(afterSaleId);
+        }
+        else
+        {
+            data.append("");
+        }
+
         // 订单编号
         if (dataItemJson.contains("order_info")
                 && dataItemJson["order_info"].toObject().contains("shop_order_id"))
