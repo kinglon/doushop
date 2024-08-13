@@ -30,4 +30,7 @@ public:
     // 浏览器宽高
     int m_browserWidth = 1920;
     int m_browserHeight = 1080;
+
+    // 是否调试
+    bool m_debug = false;
 };

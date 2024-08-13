@@ -38,4 +38,5 @@ void CSettingManager::Load()
     m_cacheJsCode = root["cache_jscode"].toInt();
     m_browserWidth = root["browser_width"].toInt();
     m_browserHeight = root["browser_height"].toInt();
+    m_debug = root["debug"].toBool();
 }

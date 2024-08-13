@@ -35,11 +35,14 @@ void PayRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
     }
 
     QString url = info.requestUrl().toString();
-    if (url.indexOf("/shopremit/record/export/download") != -1)
+    if (url.indexOf("/shopremit/record/export/tasks") != -1)
+    {
+        qInfo("exporting paying data");
+    }
+    else if (url.indexOf("/shopremit/record/export/download") != -1)
     {
         m_downloadUrl = url;
         qInfo("download url: %s", url.toStdString().c_str());
-        return;
     }
 }
 
@@ -443,7 +446,23 @@ void PayCollector::stepDownloadDataFinish(bool ok, std::string* data)
             }
         }
 
-        m_dataModel.push_back(rowContents);
+        // 筛选满足打款申请时间的数据
+        if (rowContents.length() < 6)
+        {
+            continue;
+        }
+        QString applyTime = rowContents[5];
+        QDateTime dateTime = QDateTime::fromString(applyTime, "yyyy-MM-dd HH:mm:ss");
+        if (!dateTime.isValid())
+        {
+            qCritical("the apply time (%s) is invalid", applyTime.toStdString().c_str());
+            continue;
+        }
+        qint64 utcTime = dateTime.toSecsSinceEpoch();
+        if (utcTime >= m_task.m_beginTime && utcTime <= m_task.m_endTime)
+        {
+            m_dataModel.push_back(rowContents);
+        }
     }
 
     emit runFinish(COLLECT_SUCCESS);

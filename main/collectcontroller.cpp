@@ -5,7 +5,7 @@
 #include "afterselldatacollector.h"
 #include "Utility/ImPath.h"
 #include "settingmanager.h"
-
+#include "browserwindow.h"
 #include "xlsxdocument.h"
 #include "xlsxchartsheet.h"
 #include "xlsxcellrange.h"
@@ -20,7 +20,6 @@ using namespace QXlsx;
 // 各采集数据ID key索引, 0开始
 #define COMMENT_IDKEY_INDEX     1   // 商品评论
 #define AFTERSALE_IDKEY_INDEX   1   // 售后单
-#define PAY_IDKEY_INDEX         1   // 小额打款
 
 CollectController::CollectController(QObject *parent)
     : QObject{parent}
@@ -39,11 +38,7 @@ void CollectController::run()
     else if (taskType == TASK_TYPE_AFTERSELL)
     {
         CollectStatusManager::getInstance()->setKeyIndex(AFTERSALE_IDKEY_INDEX);
-    }
-    else if (taskType == TASK_TYPE_PAY)
-    {
-        CollectStatusManager::getInstance()->setKeyIndex(PAY_IDKEY_INDEX);
-    }
+    }    
     else
     {
         CollectStatusManager::getInstance()->setKeyIndex(-1);
@@ -75,9 +70,7 @@ QString CollectController::saveCollectResult()
         destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"售后单-") + now + ".xlsx";
     }
     else if (taskType == TASK_TYPE_PAY)
-    {
-        idkeyColumnName = QString::fromWCharArray(L"订单编号");
-        idKeyIndex = PAY_IDKEY_INDEX;
+    {        
         srcExcelFilePath = QString::fromStdWString(CImPath::GetConfPath()) + QString::fromWCharArray(L"小额打款记录模板.xlsx");
         destExcelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"小额打款-") + now + ".xlsx";
     }
@@ -104,11 +97,14 @@ QString CollectController::saveCollectResult()
     }
 
     // 校验IDKEY有没正确
-    Cell* cell = xlsx.cellAt(1, idKeyIndex+1);
-    if (cell == nullptr || cell->value().toString() != idkeyColumnName)
+    if (!idkeyColumnName.isEmpty())
     {
-        qCritical("the id key column is wrong");
-        return "";
+        Cell* cell = xlsx.cellAt(1, idKeyIndex+1);
+        if (cell == nullptr || cell->value().toString() != idkeyColumnName)
+        {
+            qCritical("the id key column is wrong");
+            return "";
+        }
     }
 
     // 保存数据到表格， 从第2行开始写
@@ -173,6 +169,10 @@ void CollectController::onCollectNextTask()
     else if (task.m_type == TASK_TYPE_PAY)
     {
         collector = new PayCollector(this);
+        if (CSettingManager::GetInstance()->m_debug)
+        {
+            BrowserWindow::getInstance()->showMaximized();
+        }
     }
     else
     {

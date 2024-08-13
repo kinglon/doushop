@@ -4,5 +4,6 @@
     "cache_jscode":1,
     "request_interval_ms": 100,
     "browser_width":1920,
-    "browser_height":1080
+    "browser_height":1080,
+    "debug":false
 }
