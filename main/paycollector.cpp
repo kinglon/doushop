@@ -426,8 +426,8 @@ void PayCollector::stepDownloadDataFinish(bool ok, std::string* data)
             rowContents.push_back("");
         }
 
-        // 从第5列开始，全部获取
-        for (int column=5; column <=excelRange.lastColumn(); column++)
+        // 从第6列开始，全部获取
+        for (int column=6; column <=excelRange.lastColumn(); column++)
         {
             Cell* cell = excel.cellAt(row, column);
             if (cell)
