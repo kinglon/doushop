@@ -169,7 +169,7 @@ void CollectController::onCollectNextTask()
     else if (task.m_type == TASK_TYPE_PAY)
     {
         collector = new PayCollector(this);
-        if (CSettingManager::GetInstance()->m_debug)
+        if (BrowserWindow::getInstance()->isHidden())
         {
             BrowserWindow::getInstance()->showMaximized();
         }

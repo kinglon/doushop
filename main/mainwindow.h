@@ -52,6 +52,8 @@ private:
     QListWidgetItem* getListItem(QString shopId);
 
 private slots:
+    void onCtrlDShortcut();
+
     void onAddShopBtn();
 
     void onSelectShopBtn();

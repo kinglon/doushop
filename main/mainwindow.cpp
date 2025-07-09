@@ -7,6 +7,7 @@
 #include "gettextdialog.h"
 #include "uiutil.h"
 #include <QUuid>
+#include <QShortcut>
 #include "collectstatusmanager.h"
 #include "collectcontroller.h"
 #include "exceldialog.h"
@@ -20,6 +21,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, true);
+
+    QShortcut* ctrlDShortcut = new QShortcut(QKeySequence("Ctrl+D"), this);
+    connect(ctrlDShortcut, &QShortcut::activated, this, &MainWindow::onCtrlDShortcut);
 
     initCtrls();
 }
@@ -73,6 +77,11 @@ void MainWindow::initCtrls()
     });
 
     updateButtonStatus();
+}
+
+void MainWindow::onCtrlDShortcut()
+{
+    BrowserWindow::getInstance()->showMaximized();
 }
 
 void MainWindow::updateButtonStatus()
@@ -272,6 +281,9 @@ void MainWindow::onContinueCollectBtn()
     CollectController* collectController = new CollectController(this);
     connect(collectController, &CollectController::printLog, this, &MainWindow::addLog);
     connect(collectController, &CollectController::runFinish, [this, collectController](bool success) {
+        // 小额打款采集的时候会打开浏览器，这里隐藏它
+        BrowserWindow::getInstance()->hide();
+
         m_isCollecting = false;
         updateButtonStatus();
 

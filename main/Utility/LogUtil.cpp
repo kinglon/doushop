@@ -1,9 +1,9 @@
 ﻿#include <Windows.h>
 #include "LogUtil.h"
 #include "LogBuffer.h"
-#include "ImCharset.h"
 #include "ImPath.h"
 #include "LogMacro.h"
+#include <shlwapi.h>
 
 using namespace std;
 
@@ -99,9 +99,16 @@ void CLogUtil::OpenLog(const wchar_t* szLogFileName)
     wchar_t szLogFile[MAX_PATH];
     memset(szLogFile, 0, sizeof(szLogFile));
     _snwprintf_s(szLogFile, MAX_PATH, MAX_PATH, L"%s%s.%4d%02d%02d.log", CImPath::GetLogPath().c_str(), szLogFileName, st.wYear, st.wMonth, st.wDay); //如C:\\BERR.20111213.log
+    BOOL fileExist = ::PathFileExists(szLogFile);
     m_fpFile = _wfsopen(szLogFile, L"a+b", _SH_DENYNO);
     if (m_fpFile)
-    {
+    {        
+        if (!fileExist)
+        {
+            // 写入编码格式
+            const unsigned char bom[] = { 0xFF, 0xFE };
+            fwrite(bom, 1, 2, m_fpFile);
+        }
         fwprintf(m_fpFile, L"\n\n\nLog begin at:%d:%d:%d\n", st.wHour, st.wMinute, st.wSecond);        
         fflush(m_fpFile);
     }

@@ -390,6 +390,17 @@ void PayCollector::stepDownloadDataFinish(bool ok, std::string* data)
     }
 
     // 解析excel数据
+    if (CSettingManager::GetInstance()->m_debug)
+    {
+        QString excelFilePath = QString::fromStdWString(CImPath::GetDataPath()) + QString::fromWCharArray(L"小额打款-下载原始文件.xlsx");
+        QFile file(excelFilePath);
+        if (file.open(QFile::WriteOnly))
+        {
+            file.write(data->c_str(), static_cast<int>(data->length()));
+            file.close();
+        }
+    }
+
     QByteArray byteArray(data->c_str(), static_cast<int>(data->length()));
     QBuffer buffer(&byteArray);
     buffer.open(QIODevice::ReadOnly);
