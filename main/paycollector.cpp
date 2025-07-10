@@ -7,10 +7,8 @@
 #include "filedownloader.h"
 
 #include "xlsxdocument.h"
-#include "xlsxchartsheet.h"
 #include "xlsxcellrange.h"
 #include "xlsxchart.h"
-#include "xlsxrichstring.h"
 #include "xlsxworkbook.h"
 
 using namespace QXlsx;
@@ -19,7 +17,7 @@ using namespace QXlsx;
 #define LOAD_URL_MAX_RETRY_COUNT 1
 
 // 等待就绪状态最大重试次数
-#define WAIT_READY_MAX_RETRY_COUNT 20
+#define WAIT_READY_MAX_RETRY_COUNT 30
 
 // 等待导出数据最大秒数
 #define EXPORT_DATA_MAX_SECONDS     120
@@ -68,6 +66,10 @@ bool PayCollector::run()
     {
         m_requestInterceptor = new PayRequestInterceptor(nullptr);
         BrowserWindow::getInstance()->setRequestInterceptor(m_requestInterceptor);
+    }
+    else
+    {
+        m_requestInterceptor->m_downloadUrl = "";
     }
     BrowserWindow::getInstance()->setProfileName(m_shop.m_id);
 
@@ -153,6 +155,14 @@ void PayCollector::runJsCodeFinish(bool ok, const QMap<QString, QString>& result
             else if (result["ready"] == "1") // 就绪
             {
                 stepWaitReadyFinish(true, COLLECT_SUCCESS);
+            }
+            else if (result["ready"] == "0")
+            {
+                // 如果有导出下载地址，也认为准备就绪了
+                if (m_requestInterceptor && !m_requestInterceptor->m_downloadUrl.isEmpty())
+                {
+                    stepWaitReadyFinish(true, COLLECT_SUCCESS);
+                }
             }
         }
     }
@@ -292,7 +302,7 @@ void PayCollector::doStepWaitReady()
         return;
     }
 
-    m_stepTimer->setInterval(2000);
+    m_stepTimer->setInterval(5000);
     m_stepTimer->start();
 }
 
@@ -314,11 +324,7 @@ void PayCollector::stepWaitReadyFinish(bool ok, int errorCode)
     else
     {
         m_currentStep = STEP_EXPORT_DATA;
-        m_stepRetryCount = 0;
-        if (m_requestInterceptor)
-        {
-            m_requestInterceptor->m_downloadUrl = "";
-        }
+        m_stepRetryCount = 0;        
         emit collectLog(QString::fromWCharArray(L"导出数据"));
         doStepExportData();
     }

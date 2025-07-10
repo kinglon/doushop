@@ -16,7 +16,7 @@ void CommentDataCollector::httpGetData1()
         return;
     }
 
-    QString url = "https://fxg.jinritemai.com/product/tcomment/commentList?rank=0&content_search=0&reply_search=0&appeal_search=0&random=0.6537696171371234&appid=1&_lid=";
+    QString url = "https://fxg.jinritemai.com/product/tcomment/commentList?status_filter=0&content_search=0&reply_search=0&appeal_search=0&rank=0&count_ecology_score_filter=0&random=0.6537696171371234&appid=1&_lid=";
     QMap<QString, QString> otherQuery;
     if (!m_task.m_goodsInfo.isEmpty())
     {
@@ -60,6 +60,13 @@ void CommentDataCollector::parseData1Array(const QJsonValue& datasJson, QVector<
     for (auto dataJson : datasJson.toArray())
     {
         QJsonObject dataItemJson = dataJson.toObject();
+
+        // 追加的评论，过滤掉
+        if (dataItemJson["parent_id"].toString().length() >= 5)
+        {
+            continue;
+        }
+
         QVector<QString> data;
 
         // 店铺名称
